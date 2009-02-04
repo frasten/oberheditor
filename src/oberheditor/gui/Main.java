@@ -3,6 +3,7 @@ package oberheditor.gui;
 import org.eclipse.swt.widgets.*;
 
 public class Main {
+	final static String NOME_DB = "oberheim.db";
 
 	/**
 	 * @param args
