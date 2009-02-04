@@ -1,7 +1,5 @@
 package oberheditor.gui;
 
-import java.sql.*;
-
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -229,37 +227,19 @@ public class WinCanzone {
 
 
 	protected void salva() {
-		try {
-			Class.forName("org.sqlite.JDBC");
-			Connection conn = DriverManager.getConnection("jdbc:sqlite:" + Main.NOME_DB);
-	    Statement stat = conn.createStatement();
-	    
-	    stat.executeUpdate("CREATE TABLE IF NOT EXISTS canzone(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, lista_patch TEXT, lista_desc TEXT);");
-	    PreparedStatement prep = conn.prepareStatement(
-	        "INSERT INTO canzone(nome, lista_patch) VALUES (?, ?);");
-
-	    prep.setString(1, txtNome.getText());
-	    // Creiamo la lista di patches
-	    StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < listPatches.getItemCount(); i++) {
-				if (i > 0)
-					sb.append("|");
-				sb.append(listPatches.getItems()[i]);
-			}
-	    prep.setString(2, sb.toString());
-
-	    conn.setAutoCommit(false);
-	    prep.execute();
-	    conn.setAutoCommit(true);
-
-	    conn.close();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Database.creaTable(Database.TBL_CANZONE);
+		
+    // Creiamo la lista di patches
+    StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < listPatches.getItemCount(); i++) {
+			if (i > 0)
+				sb.append("|");
+			sb.append(listPatches.getItems()[i]);
 		}
+    
+		Database.query(
+				"INSERT INTO canzone(nome, lista_patch) VALUES (?, ?);",
+				txtNome.getText(), sb.toString());
     		
 	}
 }
