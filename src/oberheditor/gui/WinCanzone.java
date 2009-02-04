@@ -3,6 +3,7 @@ package oberheditor.gui;
 import java.sql.*;
 
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.*;
@@ -88,7 +89,10 @@ public class WinCanzone {
 		
 		// Pulsante Add
 		Button btnAdd = new Button(win, SWT.PUSH);
-		btnAdd.setText("Aggiungi");
+		Image imgAdd = new Image(display, "res/add.png");
+		btnAdd.setImage(imgAdd);
+
+		//btnAdd.setText("Aggiungi");
 		btnAdd.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				listPatches.add(cmbBanco.getItem(cmbBanco.getSelectionIndex()) + "-" +
@@ -101,7 +105,48 @@ public class WinCanzone {
 		btnAdd.pack();
 		btnAdd.setLocation(250, 80);
 		
+		// Con invio, aggiunge questa patch
 		win.setDefaultButton(btnAdd);
+		
+		/********************************************
+		 * CONTROLLI PER LA LISTA
+		 ********************************************/
+		Button btnMuoviSu = new Button(win, SWT.PUSH);
+		btnMuoviSu.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				String [] selezionati = listPatches.getSelection();
+				if (selezionati.length <= 0) return;
+			}
+		});
+		Image imgSu = new Image(display, "res/up.png");
+		btnMuoviSu.setImage(imgSu);
+		btnMuoviSu.pack();
+		btnMuoviSu.setLocation(120, 170);
+		
+		Button btnMuoviGiu = new Button(win, SWT.PUSH);
+		Image imgGiu = new Image(display, "res/down.png");
+		btnMuoviGiu.setImage(imgGiu);
+		btnMuoviGiu.pack();
+		btnMuoviGiu.setLocation(120, 210);
+		
+		Button btnElimina = new Button(win, SWT.PUSH);
+		Image imgElimina = new Image(display, "res/delete.png");
+		btnElimina.setImage(imgElimina);
+		btnElimina.pack();
+		btnElimina.setLocation(120, 250);
+		btnElimina.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				listPatches.remove(listPatches.getSelectionIndices());
+			}
+		});
+		
+		/*
+		Button btnInserisci = new Button(win, SWT.PUSH);
+		Image imgInserisci = new Image(display, "res/add.png");
+		btnInserisci.setImage(imgInserisci);
+		btnInserisci.pack();
+		*/
+		
 		
 		
 		Button btnAnnulla = new Button(win, SWT.PUSH);
