@@ -123,9 +123,13 @@ public class WinCanzone {
 				
 				int idPrecedente = idSelezionati[0] - 1;
 				for (int i = 0; i < selezionati.length; i++) {
-					listPatches.add(selezionati[i], idPrecedente + (idSelezionati[i] - idSelezionati[0]));
-					listPatches.remove(idSelezionati[i]+1);
+					int nuovaposizione = idPrecedente + (idSelezionati[i] - idSelezionati[0]);
+					listPatches.add(selezionati[i], nuovaposizione);
+					listPatches.remove(idSelezionati[i] + 1);
+					// Ripristino la selezione
+					listPatches.select(nuovaposizione);
 				}
+
 			}
 		});
 		Image imgSu = new Image(display, "res/up.png");
@@ -134,6 +138,25 @@ public class WinCanzone {
 		btnMuoviSu.setLocation(120, 170);
 		
 		Button btnMuoviGiu = new Button(win, SWT.PUSH);
+		btnMuoviGiu.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				String [] selezionati = listPatches.getSelection();
+				// se non ho nessuna selezione, non faccio niente
+				if (selezionati.length <= 0) return;
+				int [] idSelezionati = listPatches.getSelectionIndices(); 
+				// se sono gia' alla fine della lista, non faccio niente
+				if (idSelezionati[idSelezionati.length - 1] >= listPatches.getItemCount() - 1) return;
+				
+				int idSuccessivo = idSelezionati[idSelezionati.length - 1] + 1;
+				for (int i = selezionati.length -1 ; i >= 0; i--) {
+					int nuovaposizione = idSuccessivo + (idSelezionati[i] - idSelezionati[idSelezionati.length - 1]) + 1;
+					listPatches.add(selezionati[i], nuovaposizione);
+					listPatches.remove(idSelezionati[i]);
+					// Ripristino la selezione
+					listPatches.select(nuovaposizione - 1);
+				}
+			}
+		});
 		Image imgGiu = new Image(display, "res/down.png");
 		btnMuoviGiu.setImage(imgGiu);
 		btnMuoviGiu.pack();
