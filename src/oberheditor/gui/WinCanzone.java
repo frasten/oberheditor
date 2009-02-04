@@ -115,7 +115,17 @@ public class WinCanzone {
 		btnMuoviSu.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				String [] selezionati = listPatches.getSelection();
+				// se non ho nessuna selezione, non faccio niente
 				if (selezionati.length <= 0) return;
+				int [] idSelezionati = listPatches.getSelectionIndices(); 
+				// se sono gia' all'inizio della lista, non faccio niente
+				if (idSelezionati[0] <= 0) return;
+				
+				int idPrecedente = idSelezionati[0] - 1;
+				for (int i = 0; i < selezionati.length; i++) {
+					listPatches.add(selezionati[i], idPrecedente + (idSelezionati[i] - idSelezionati[0]));
+					listPatches.remove(idSelezionati[i]+1);
+				}
 			}
 		});
 		Image imgSu = new Image(display, "res/up.png");
