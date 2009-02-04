@@ -8,7 +8,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.*;
 
-import com.sun.org.apache.bcel.internal.generic.LSTORE;
 
 
 public class WinCanzone {
@@ -53,18 +52,11 @@ public class WinCanzone {
 		listPatches.setBounds (10, 80, 100, 280);
 		listPatches.addListener (SWT.Selection, new Listener () {
 			public void handleEvent (Event e) {
-				String string = "";
-				int [] selection = listPatches.getSelectionIndices ();
-				for (int i=0; i<selection.length; i++) string += selection [i] + " ";
-				System.out.println ("Selection={" + string + "}");
-			}
-		});
-		listPatches.addListener (SWT.DefaultSelection, new Listener () {
-			public void handleEvent (Event e) {
-				String string = "";
-				int [] selection = listPatches.getSelectionIndices ();
-				for (int i=0; i<selection.length; i++) string += selection [i] + " ";
-				System.out.println ("DefaultSelection={" + string + "}");
+				// Su cambio di selezione, imposto i controlli per una nuova patch
+				String [] sel = listPatches.getSelection();
+				String[] dati = sel[0].split("-");
+				cmbBanco.select(cmbBanco.indexOf(dati[0]));
+				txtPatch.setSelection(Integer.parseInt(dati[1]) + 1);
 			}
 		});
 		
@@ -174,6 +166,7 @@ public class WinCanzone {
 		});
 		
 		/*
+		 * TODO: Insert
 		Button btnInserisci = new Button(win, SWT.PUSH);
 		Image imgInserisci = new Image(display, "res/add.png");
 		btnInserisci.setImage(imgInserisci);
