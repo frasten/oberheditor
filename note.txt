@@ -1,0 +1,334 @@
+Chain:
+1 chain:  12 messaggi
+2 chains: 21 messaggi
+
+Quindi probabilmente ho:
+1 messaggio di apertura (HEAD)
+9 messaggi (* ogni chain) per i dati (DATA)
+2 messaggi di chiusura (FOOT1 e FOOT2)
+
+Lunghezza dei messaggi: (inclusivi di apertura 0xF0 e chiusura 0xF7)
+* Caso 1 sola chain:
+HEAD: 25
+DATA: 75
+FOOT1: 21
+FOOT2: 14
+
+* Caso 2 chain:
+HEAD: 39
+DATA: 75
+FOOT1: 30
+FOOT2: 16
+
+[...]
+
+Ogni messaggio SysEx inizia per F0 (240) e finisce per F7 (247)
+Poi, 1 byte per il produttore, per Oberheim abbiamo (credo):
+7E
+
+Comunque successivamente tutti i messaggi continuano con:
+7F 00 02 01 50 (<==oppure 70)
+
+Quindi, ricapitolando, ogni messaggio inizia con:
+F0 7E 7F 00 02 01
+
+======== PRIMO SYSEX =========
+
+Chain 1, con un po' di roba
+F0 7E 7F 00 02 01 50 7A 00 75 00 53 49 4C 45 4E 54 20 00 4D 49 44 49 41 F7
+                                 S  I  L  E  N  T        M  I  D  I  A
+									      ^^
+Chain 2, default
+F0 7E 7F 00 02 01 50 7A 0C 75 00 20 44 45 46 41 55 4C 00 54 20 20 20 20 F7
+                                    D  E  F  A  U  L     T             
+									      ^^
+
+Chain 3, default
+F0 7E 7F 00 02 01 50 7A 18 75 00 20 44 45 46 41 55 4C 00 54 20 20 20 20 F7
+                        ^^
+
+Chain 4, default
+F0 7E 7F 00 02 01 50 7A 18 75 00 20 44 45 46 41 55 4C 00 54 20 20 20 20 F7
+                        ^^
+
+
+Chain 1+2:
+F0 7E 7F 00 02 01 50 7A 00 75 00 53 49 4C 45 4E 54 20 00 4D 49 44 49 41 20 44 00 45 46 41 55 4C 54 20 00 20 20 20 F7
+                        ^^       S  I  L  E  N  T        M  I  D  I  A     D     E  F  A  U  L  T                
+                              |probabilmente parte da qui
+Chain 2+3:
+F0 7E 7F 00 02 01 50 7A 0C 75 00 20 44 45 46 41 55 4C 00 54 20 20 20 20 20 44 00 45 46 41 55 4C 54 20 00 20 20 20 F7
+                        ^^          D  E  F  A  U  L     T                 D     E  F  A  U  L  T                
+
+Chain 3+4:
+F0 7E 7F 00 02 01 50 7A 18 75 00 20 44 45 46 41 55 4C 00 54 20 20 20 20 20 44 00 45 46 41 55 4C 54 20 00 20 20 20 F7
+                        ^^          D  E  F  A  U  L     T                 D     E  F  A  U  L  T                
+
+
+
+* La descrizione (testo)
+Lunghezza max per chain: 12chars
+parte dalla posizione n. 10 (partendo dalla 0, e
+inclusi tutti i bytes del messaggio, anche gli headers).
+Se la descrizione è più corta di 12 caratteri, riempio con spazi (0x20).
+
+In caso voglia mettere più di una chain, le concateno, creando una lunga
+descrizione.
+
+Per scriverla, metto sempre 0x00 e 7 caratteri, e ripeto finché non arrivo
+alla fine della/e descrizione/i.
+Il 0x00 è diciamo un separatore.
+
+
+* Il carattere segnato (chain singole)
+Abbiamo questa corrispondenza:
+Chain 1 (indice 0): 0x00 = 0 in decimale
+Chain 2 (indice 1): 0x0C = 12 in decimale
+Chain 3 (indice 2): 0x18 = 24 in decimale
+Chain 4 (indice 3): 0x24 = 36 in decimale
+
+Quindi dovrebbe essere l'indice della chain, moltiplicato per 12. (perchè??)
+TODO: Vedere quando supero 128 (la chain con id 11 [la chain 12] avrebbe
+132). Controllare cosa succede.
+
+Nel caso di chain multiple, indica comunque l'indice della PRIMA chain di
+quelle che sto inviando.
+
+ATTENZIONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+Quando invio (relativamente) parecchi dati (tipo con 5 chain si verifica già)
+questo header verrà suddiviso in vari messaggi.
+
+
+========= 1° FOOTER ===========
+
+Chain 1:
+F0 7E 7F 00 02 01 70 01 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
+
+Chain 2:
+F0 7E 7F 00 02 01 70 03 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
+                     ^^
+Chain 3:
+F0 7E 7F 00 02 01 70 05 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
+                     ^^
+Chain 4:
+F0 7E 7F 00 02 01 70 07 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
+                     ^^
+
+Chain 1+2:
+F0 7E 7F 00 02 01 70 03 70 70 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 60 7F 7F F7
+                     ^^
+Chain 2+3:
+F0 7E 7F 00 02 01 70 05 70 70 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 60 7F 7F F7
+                     ^^
+Chain 3+4:
+F0 7E 7F 00 02 01 70 07 70 70 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 60 7F 7F F7
+                     ^^
+
+========= 2° FOOTER ===========
+Viene inviato un attimino dopo tutto il resto.
+
+Chain 1:
+F0 7E 7F 00 02 01 50 79 00 75 00 02 00 F7
+                        ^^       ^^
+Chain 2:
+F0 7E 7F 00 02 01 50 79 02 75 00 00 00 F7
+                        ^^       ^^
+Chain 3:
+F0 7E 7F 00 02 01 50 79 04 75 00 00 00 F7
+                        ^^       ^^
+Chain 4:
+F0 7E 7F 00 02 01 50 79 06 75 00 00 00 F7
+                        ^^       ^^
+Chain 1+2:
+F0 7E 7F 00 02 01 50 79 00 75 00 02 00 00 00 F7
+                        ^^       ^^
+Chain 2+3:
+F0 7E 7F 00 02 01 50 79 02 75 00 00 00 00 00 F7
+                        ^^       ^^
+
+=========== DATA ============
+Ho 256 posizioni, per ogni posizione devo salvare:
+Banco (fino alla H [8 valori, 3 bits])
+Patch number (1-128 [128 valori, 1byte])
+
+Analizziamo un msg DATA: (chain 1)
+F0 7E 7F 00 02 01 50 00 00 70 | ...
+F0 7E 7F 00 02 01 50 00 38 70 | ...
+F0 7E 7F 00 02 01 50 00 70 70 | ...
+F0 7E 7F 00 02 01 70 00 28 70 | ...
+F0 7E 7F 00 02 01 70 00 60 70 | ...
+F0 7E 7F 00 02 01 50 01 18 70 | ...
+F0 7E 7F 00 02 01 50 01 50 70 | ...
+F0 7E 7F 00 02 01 70 01 08 70 | ...
+F0 7E 7F 00 02 01 70 01 40 70 | ...
+                  ^^ ^^ ^^
+
+Analizziamo un msg DATA vuoto: (chain 2)
+F0 7E 7F 00 02 01 50 02 00 70 | 7F (<== 64 volte questo byte, che è 127 in decimale)
+F0 7E 7F 00 02 01 50 02 38 70 | 7F...
+F0 7E 7F 00 02 01 50 02 70 70 | 7F...
+F0 7E 7F 00 02 01 70 02 28 70 | 7F...
+F0 7E 7F 00 02 01 70 02 60 70 | 7F...
+F0 7E 7F 00 02 01 50 03 18 70 | 7F...
+F0 7E 7F 00 02 01 50 03 50 70 | 7F...
+F0 7E 7F 00 02 01 70 03 08 70 | 7F...
+F0 7E 7F 00 02 01 70 03 40 70 | 7F...
+                  ^^ ^^ ^^
+01010000 00000010 00000000
+01010000 00000010 00111000
+01010000 00000010 01110000
+01110000 00000010 00101000
+01110000 00000010 01100000
+01010000 00000011 00011000
+01010000 00000011 01010000
+01110000 00000011 00001000
+01110000 00000011 01000000
+
+Analizziamo un msg DATA vuoto: (chain 3)
+F0 7E 7F 00 02 01 50 04 00 70 | 7F (<== 64 volte questo byte, che è 127 in decimale)
+F0 7E 7F 00 02 01 50 04 38 70 | 7F...
+F0 7E 7F 00 02 01 50 04 70 70 | 7F...
+F0 7E 7F 00 02 01 70 04 28 70 | 7F...
+F0 7E 7F 00 02 01 70 04 60 70 | 7F...
+F0 7E 7F 00 02 01 50 05 18 70 | 7F...
+F0 7E 7F 00 02 01 50 05 50 70 | 7F...
+F0 7E 7F 00 02 01 70 05 08 70 | 7F...
+F0 7E 7F 00 02 01 70 05 40 70 | 7F...
+                  ^^ ^^ ^^
+
+Analizziamo un msg DATA vuoto: (chain 4)
+F0 7E 7F 00 02 01 50 06 00 70 | 7F (<== 64 volte questo byte, che è 127 in decimale)
+F0 7E 7F 00 02 01 50 06 38 70 | 7F...
+F0 7E 7F 00 02 01 50 06 70 70 | 7F...
+F0 7E 7F 00 02 01 70 06 28 70 | 7F...
+F0 7E 7F 00 02 01 70 06 60 70 | 7F...
+F0 7E 7F 00 02 01 50 07 18 70 | 7F...
+F0 7E 7F 00 02 01 50 07 50 70 | 7F...
+F0 7E 7F 00 02 01 70 07 08 70 | 7F...
+F0 7E 7F 00 02 01 70 07 40 70 | 7F...
+                  ^^ ^^ ^^
+
+
+Chain 1+2
+F0 7E 7F 00 02 01 50 00 00 70 | ...
+F0 7E 7F 00 02 01 50 00 38 70 | ...
+F0 7E 7F 00 02 01 50 00 70 70 | ...
+F0 7E 7F 00 02 01 70 00 28 70 | ...
+F0 7E 7F 00 02 01 70 00 60 70 | ...
+F0 7E 7F 00 02 01 50 01 18 70 | ...
+F0 7E 7F 00 02 01 50 01 50 70 | ...
+F0 7E 7F 00 02 01 70 01 08 70 | ...
+F0 7E 7F 00 02 01 70 01 40 70 | ...
+===
+F0 7E 7F 00 02 01 70 01 78 70 | ...
+F0 7E 7F 00 02 01 50 02 30 70 | ...
+F0 7E 7F 00 02 01 50 02 68 70 | ...
+F0 7E 7F 00 02 01 70 02 20 70 | ...
+F0 7E 7F 00 02 01 70 02 58 70 | ...
+F0 7E 7F 00 02 01 50 03 10 70 | ...
+F0 7E 7F 00 02 01 50 03 48 70 | ...
+F0 7E 7F 00 02 01 70 03 00 70 | ...
+F0 7E 7F 00 02 01 70 03 38 70 | ...
+
+01010000 00000000 00000000
+01010000 00000000 00111000
+01010000 00000000 01110000
+01110000 00000000 00101000 *
+01110000 00000000 01100000
+01010000 00000001 00011000 *
+01010000 00000001 01010000
+01110000 00000001 00001000 *
+01110000 00000001 01000000
+
+01110000 00000001 01111000
+01010000 00000010 00110000 *
+01010000 00000010 01101000
+01110000 00000010 00100000 *
+01110000 00000010 01011000
+01010000 00000011 00010000 *
+01010000 00000011 01001000
+01110000 00000011 00000000 *
+01110000 00000011 00111000
+
+Regola:
+Condizione iniziale:
+Byte 1: 0x50
+Byte 2: 2 * id_chain(che parte da zero)
+Byte 3: 0x00
+
+Incremento il byte 3 sempre di 0x38 (56), e ne scrivo il modulo a 0x80
+(128) sempre nel byte 3.
+Quando ho overflow, cambio il 1° byte da 50 a 70, o viceversa.
+Se il cambio è da 50 ==> 70, tutto ok, mentre se ho 70 ==> 50, allora
+incremento il 2° byte di 1.
+
+
+Vecchie domande (inutili oramai)
+* Il primo dei tre bytes può essere o 50 o 70. Perché?
+* Il secondo è influenzato dal numero della chain, però aumenta man mano
+che scorrono i messaggi.
+La chain 1 ha byte 0x00, e ad ogni chain viene incrementato di 2. Quindi
+ad esempio la chain 3 ha 0x04.
+* Il terzo viene aumentato sempre di 0x38 (56), ma non supera mai 0x80
+(128).
+Se lo raggiunge o supera, ne metto solo il modulo. (se dovessi avere 0x80,
+metterei 0x00).
+
+
+Quindi abbiamo 3 byte che cambiano, anche se tra una chain e l'altra solo
+il secondo varia.
+
+Analizziamo i 64bytes di dati effettivi.
+00 41 15 41 16 41 17 41 00 18 41 16 41 15
+
+La scaletta vera dovrebbe essere:
+1: A-021 = 0x15
+2: A-022 = 0x16
+3: A-023 = 0x17
+4: A-024 = 0x18
+5: A-022 = 0x16
+6: A-021 = 0x15
+7: A-025 = 0x19
+8: A-026 = 0x1A
+9: A-027 = 0x1B
+...
+111: A-126
+112: A-127
+113: B-001
+
+Banco:
+ A: 01000001
+ B: 01000010
+?C: 01000011
+?D: 01000100
+?E: 01000101
+?F: 01000110
+?G: 01000111
+?H: 01001000 ???
+
+Alterno Banco - Patch, e li scrivo alternati a gruppi così formati:
+0x00 (separatore)
+7 bytes delle alternanze
+
+Continuo finché non arrivo alla fine.
+
+Ho per ogni messaggio 56 bytes di dati (2bytes per patch perché ho banco
++ patch) ==> 28 patch per messaggio = 252 patches totali. Non dovevano
+essere 256?
+
+
+
+
+
+SCOPERTA!!! (credo)
+il "separatore" 0x00 (0), oppure 0x7F (127), in realtà è una maschera:
+se ho
+0x00: 00000000
+0x7F: 11111111
+0x1F: 00011111
+con 0 che indica un byte valido, 1 che indica un byte inutile.
+
+Visto che è sempre ogni 8 bytes, indica se i prossimi valori (incluso se
+stesso) sono validi oppure no.
+Nel caso di 0x1F: 00011111 Avrò la maschera valida, e altri 2 bytes validi.
+Il resto non conta. Li riempio comunque a 0x7F (127)

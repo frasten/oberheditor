@@ -1,0 +1,34 @@
+body, td {
+	font-family: Verdana, sans;
+	font-size: 12px;
+}
+
+table {
+	background-color: #ddd;
+	border-collapse: collapse;
+}
+
+td {
+	border: 1px solid #aaa;
+	padding: 4px 10px;
+}
+
+.tr_drag {
+	background-color: #eee;
+}
+
+thead {
+	font-weight: bold;
+	background-color: #bbb;
+}
+
+.input_editabile {
+	height: 20px;
+}
+
+td.showDragHandle {
+	background-image:url(../img/updown2.gif);
+	background-position:center center;
+	background-repeat:no-repeat;
+	cursor:move;
+}
