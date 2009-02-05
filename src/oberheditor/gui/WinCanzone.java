@@ -237,7 +237,7 @@ public class WinCanzone {
 			sb.append(listPatches.getItems()[i]);
 		}
     
-		Database.query(
+		Database.queryUp(
 				"INSERT INTO canzone(nome, lista_patch) VALUES (?, ?);",
 				txtNome.getText(), sb.toString());
     		

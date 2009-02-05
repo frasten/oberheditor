@@ -12,8 +12,8 @@ public class Main {
 		Database.init();
 		
 		Display display = new Display();
-		WinCanzone winCanzone = new WinCanzone(display);
-		//WinScaletta win = new WinScaletta(display);
+		//WinCanzone winCanzone = new WinCanzone(display);
+		WinScaletta win = new WinScaletta(display);
 
 	}
 

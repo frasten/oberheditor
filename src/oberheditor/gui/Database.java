@@ -35,49 +35,51 @@ public class Database {
 		}
 	}
 	
-	public static boolean query(String query, String ... args) {
+	public static ResultSet query(String query, String ... args) {
 		try {
-			//Statement stat = conn.createStatement();
 			PreparedStatement prep = conn.prepareStatement(query);
-			//stat.executeUpdate(query);
 			for (int i = 0; i < args.length; i++) {
 				prep.setString(i+1, new String(args[i]));
 			}
 			
-			
-			conn.setAutoCommit(false);
-	    prep.execute();
-	    conn.setAutoCommit(true);
-			
+			ResultSet res = prep.executeQuery();
+			return res;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return false;
+		return null;
 	}
 	
-	public static boolean querySel(String query) {
+	public static int queryUp(String query, String ... args) {
 		try {
-			Statement stat = conn.createStatement();
-			stat.execute(query);
+			PreparedStatement prep = conn.prepareStatement(query);
+			for (int i = 0; i < args.length; i++) {
+				prep.setString(i+1, new String(args[i]));
+			}
+			
+			conn.setAutoCommit(false);
+	    int result = prep.executeUpdate();
+	    conn.setAutoCommit(true);
+	    return result;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return false;
+		return -1;
 	}
 	
 	public static void creaTable(int tabella) {
 		
 		
-		if ((TBL_CANZONE & tabella) != 0) {
-			query("CREATE TABLE IF NOT EXISTS canzone(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, lista_patch TEXT, lista_desc TEXT);");
+		if ((tabella & TBL_CANZONE) != 0) {
+			queryUp("CREATE TABLE IF NOT EXISTS canzone(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, lista_patch TEXT, lista_desc TEXT);");
 		}
-		if ((TBL_SCALETTA & tabella) != 0) {
-			
+		if ((tabella & TBL_SCALETTA) != 0) {
+			queryUp("CREATE TABLE IF NOT EXISTS scaletta(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, data TEXT);");
 		}
-		if ((TBL_SCALETTA_CANZONE & tabella) != 0) {
-			
+		if ((tabella & TBL_SCALETTA_CANZONE) != 0) {
+			queryUp("CREATE TABLE IF NOT EXISTS scaletta_canzone(id_scaletta INTEGER, id_canzone INTEGER, ordine INTEGER);");
 		}
 		
 	}
