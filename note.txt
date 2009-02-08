@@ -1,3 +1,8 @@
+NOTA GENERALE:
+Nessun valore eccetto il primo e l'ultimo byte di ogni sysex (F0 e F7) è
+mai >= 80 (128), perchè probabilmente avrebbe il primo bit a 1, che vuol
+dire che è un dato speciale, immagino.
+
 Chain:
 1 chain:  12 messaggi
 2 chains: 21 messaggi
@@ -22,15 +27,91 @@ FOOT2: 16
 
 [...]
 
-Ogni messaggio SysEx inizia per F0 (240) e finisce per F7 (247)
-Poi, 1 byte per il produttore, per Oberheim abbiamo (credo):
-7E
+- Ogni messaggio SysEx inizia per F0 (240) e finisce per F7 (247)
+- Poi ho il byte 7E, che indica un sysex universale, non real time.
+- Poi c'è il byte per indicare il dispositivo/canale, ma visto che è 
+  settato a 7F, vuol dire che è indirizzato a qualsiasi cosa in ascolto.
+- byte Sub ID 1, impostato a 00 (disabilitato, credo che questo indichi di
+  non leggere considerare il prossimo byte come Sub ID 2, ma proprio come
+	data).
+- DATI......
+- fine: F7
 
-Comunque successivamente tutti i messaggi continuano con:
-7F 00 02 01 50 (<==oppure 70)
 
-Quindi, ricapitolando, ogni messaggio inizia con:
-F0 7E 7F 00 02 01
+**** I BYTES ADDR ****
+Tutti i dati iniziano con: 02 01, poi abbiamo 4 bytes di indirizzo [ADDR].
+Sono cosi' composti (notare l'ordine con cui li prendo in considerazione)
+ADDR3: Il primo di ogni serie di messaggi (header, data, footer) ha un
+       valore che dipende dal tipo di messaggio:
+       HEADER: 12 (ovvero 0x0C) * id_chain (che parte da zero) di partenza
+			 DATA: 
+			 FOOTER:
+       Successivamente viene incrementato sempre di 0x38 (56), e ne
+			 scrivo il modulo a 0x80 (128) sempre nel byte ADDR3.
+
+ADDR1: Il primo di ogni serie di messaggi (header, data, footer) vale 0x50.
+       Successivamente, quando dall'incremento in ADDR3 ho overflow,
+			 cambio ADDR1 da 50 a 70, o viceversa.
+
+ADDR2: Il primo di ogni serie ha un valore che dipende dal tipo di messaggio:
+       HEADER: 0x7A
+			 DATA: 2 * id_chain(che parte da zero)
+			 FOOTER:
+       Se il cambio è da 50 ==> 70, tutto ok, mentre se ho 70 ==> 50, allora
+       incremento il 2° byte di 1.
+
+ADDR4: Il primo di ogni serie ha un valore che dipende dal tipo di messaggio:
+       HEADER: 0x75
+			 DATA: 
+			 FOOTER: 
+       Se anche incrementando ADDR2 ho overflow oltre 7F, incremento di 1
+       ADDR4.
+
+Combinazioni di inizio (partendo dalla chain 1), alle quali si sommano:
+HEADER: 50 7A 00 75
+DATA:   50 00 00 70
+FOOTER: 50 79 00 75
+
+
+Header, partenza dalla chain:
+1)   50 7A 00 75  (id 0)     0
+2)   50 7A 0C 75  (id 1)     12
+3)   50 7A 18 75  (id 2)     24
+12)  70 7A 04 75  (id 11)    132
+127) 70 7F 68 75  (id 126)   1512
+128) 70 7F 74 75  (id 127)   1524 => 10111110100
+
+== Regola per costruire i bytes ADDR partendo dal numero contatore ==
+
+Prendiamo il caso della chain 127, ad esempio.
+  id = 126
+In un messaggio di header, il contatore iniziale è 12 * id_chain.
+(Poi verrà incrementato di 56.)
+quindi contatore = 12 * 126 = 1512 = 10111101000 in binario.
+Questo numero in binario lo suddivido nel seguente modo:
+  101 1 1101000
+   A  B    C
+* C lo metto in ADDR3
+* se B è 0, ADDR1 = 0x50, altrimenti 0x70.
+* A lo sommo al valore di partenza di ADDR2, e lo metto in ADDR2
+* se avessi avuto altre cifre a sinistra di queste, tipo (11xxxx...) avrei
+  sommato questo valore (11 = 3) al valore di partenza di ADDR4, ottenendo
+	il nuovo valore di ADDR4.
+
+Mask per ottenere i valori di cui ho bisogno:
+ADDR3 0000000    MASK: 0x7F
+ADDR1 0          MASK: 0x80
+ADDR2 000 (da togliere 2, parte da 010) MASK: 0x700
+ADDR4 mask negativa di 11111111111
+
+
+
+Quindi, ricapitolando struttura di ogni messaggio:
+* 6 bytes fissi: F0 7E 7F 00 02 01          HEADER
+* 4 Bytes che indicano l'indirizzo [ADDR]
+* max 64 bytes di dati [DATA]
+* byte di chiusura: F7
+TOT: max 75 bytes
 
 ======== PRIMO SYSEX =========
 
@@ -48,14 +129,13 @@ F0 7E 7F 00 02 01 50 7A 18 75 00 20 44 45 46 41 55 4C 00 54 20 20 20 20 F7
                         ^^
 
 Chain 4, default
-F0 7E 7F 00 02 01 50 7A 18 75 00 20 44 45 46 41 55 4C 00 54 20 20 20 20 F7
+F0 7E 7F 00 02 01 50 7A 24 75 00 20 44 45 46 41 55 4C 00 54 20 20 20 20 F7
                         ^^
-
 
 Chain 1+2:
 F0 7E 7F 00 02 01 50 7A 00 75 00 53 49 4C 45 4E 54 20 00 4D 49 44 49 41 20 44 00 45 46 41 55 4C 54 20 00 20 20 20 F7
                         ^^       S  I  L  E  N  T        M  I  D  I  A     D     E  F  A  U  L  T                
-                              |probabilmente parte da qui
+                              | parte da qui
 Chain 2+3:
 F0 7E 7F 00 02 01 50 7A 0C 75 00 20 44 45 46 41 55 4C 00 54 20 20 20 20 20 44 00 45 46 41 55 4C 54 20 00 20 20 20 F7
                         ^^          D  E  F  A  U  L     T                 D     E  F  A  U  L  T                
@@ -88,18 +168,22 @@ Chain 3 (indice 2): 0x18 = 24 in decimale
 Chain 4 (indice 3): 0x24 = 36 in decimale
 
 Quindi dovrebbe essere l'indice della chain, moltiplicato per 12. (perchè??)
-TODO: Vedere quando supero 128 (la chain con id 11 [la chain 12] avrebbe
-132). Controllare cosa succede.
 
 Nel caso di chain multiple, indica comunque l'indice della PRIMA chain di
 quelle che sto inviando.
 
-ATTENZIONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+ATTENZIONE
 Quando invio (relativamente) parecchi dati (tipo con 5 chain si verifica già)
 questo header verrà suddiviso in vari messaggi.
 
+** Numero di messaggi occupati dall'header: **
+ho max 64 bytes disponibili per ogni messaggio, ma solo 56 sono utilizzabili
+realmente (gli altri 8 sono mask)
+Ho 12 bytes da utilizzare, per ogni chain, quindi il numero di messaggi è:
+ceil((n_chains * 12) / 56)
 
-========= 1° FOOTER ===========
+
+========= 1° FOOTER =========== (in realtà è solo l'ultimo dei DATA)
 
 Chain 1:
 F0 7E 7F 00 02 01 70 01 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
@@ -124,8 +208,7 @@ Chain 3+4:
 F0 7E 7F 00 02 01 70 07 70 70 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 60 7F 7F F7
                      ^^
 
-========= 2° FOOTER ===========
-Viene inviato un attimino dopo tutto il resto.
+========= 2° FOOTER =========== (footer vero)
 
 Chain 1:
 F0 7E 7F 00 02 01 50 79 00 75 00 02 00 F7
@@ -149,7 +232,7 @@ F0 7E 7F 00 02 01 50 79 02 75 00 00 00 00 00 F7
 =========== DATA ============
 Ho 256 posizioni, per ogni posizione devo salvare:
 Banco (fino alla H [8 valori, 3 bits])
-Patch number (1-128 [128 valori, 1byte])
+Patch number (1-128 [128 valori, 7bits])
 
 Analizziamo un msg DATA: (chain 1)
 F0 7E 7F 00 02 01 50 00 00 70 | ...
