@@ -44,7 +44,7 @@ Sono cosi' composti (notare l'ordine con cui li prendo in considerazione)
 ADDR3: Il primo di ogni serie di messaggi (header, data, footer) ha un
        valore che dipende dal tipo di messaggio:
        HEADER: 12 (ovvero 0x0C) * id_chain (che parte da zero) di partenza
-			 DATA: 
+			 DATA: 0x00
 			 FOOTER:
        Successivamente viene incrementato sempre di 0x38 (56), e ne
 			 scrivo il modulo a 0x80 (128) sempre nel byte ADDR3.
@@ -58,11 +58,11 @@ ADDR2: Il primo di ogni serie ha un valore che dipende dal tipo di messaggio:
 			 DATA: 2 * id_chain(che parte da zero)
 			 FOOTER:
        Se il cambio è da 50 ==> 70, tutto ok, mentre se ho 70 ==> 50, allora
-       incremento il 2° byte di 1.
+       incremento ADDR2 di 1.
 
 ADDR4: Il primo di ogni serie ha un valore che dipende dal tipo di messaggio:
        HEADER: 0x75
-			 DATA: 
+			 DATA: 0x70
 			 FOOTER: 
        Se anche incrementando ADDR2 ho overflow oltre 7F, incremento di 1
        ADDR4.
@@ -89,20 +89,28 @@ In un messaggio di header, il contatore iniziale è 12 * id_chain.
 (Poi verrà incrementato di 56.)
 quindi contatore = 12 * 126 = 1512 = 10111101000 in binario.
 Questo numero in binario lo suddivido nel seguente modo:
-  101 1 1101000
-   A  B    C
-* C lo metto in ADDR3
-* se B è 0, ADDR1 = 0x50, altrimenti 0x70.
-* A lo sommo al valore di partenza di ADDR2, e lo metto in ADDR2
-* se avessi avuto altre cifre a sinistra di queste, tipo (11xxxx...) avrei
-  sommato questo valore (11 = 3) al valore di partenza di ADDR4, ottenendo
-	il nuovo valore di ADDR4.
+00000 0000101 1 1101000
+  A     B     C    D
+* D lo metto in ADDR3
+* se C è 0, ADDR1 = 0x50, altrimenti 0x70.
+* B lo sommo al valore di partenza di ADDR2, e lo metto in ADDR2
+* se avessi avuto altre cifre a sinistra di queste (A), tipo (11xxxx...)
+  avrei sommato questo valore (11 = 3) al valore di partenza di ADDR4,
+	ottenendo	il nuovo valore di ADDR4.
+
+Il contatore di partenza si ottiene con queste formule:
+HEADER: contatore =  12 * id_sequenza
+DATA:   contatore = 512 * id_sequenza
+FOOTER: contatore =   2 * id_sequenza
+
 
 Mask per ottenere i valori di cui ho bisogno:
-ADDR3 0000000    MASK: 0x7F
-ADDR1 0          MASK: 0x80
-ADDR2 000 (da togliere 2, parte da 010) MASK: 0x700
-ADDR4 mask negativa di 11111111111
+ADDR3 1111111    MASK: 0x7F
+ADDR1 1          MASK: 0x80
+ADDR2 1111111    MASK: 0x7F00
+ADDR4 mask negativa di 111111111111111
+
+Se faccio un AND binario con il contatore, dovrei ottenere il valore richiesto.
 
 
 
@@ -211,23 +219,52 @@ F0 7E 7F 00 02 01 70 07 70 70 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 60
 ========= 2° FOOTER =========== (footer vero)
 
 Chain 1:
-F0 7E 7F 00 02 01 50 79 00 75 00 02 00 F7
+F0 7E 7F 00 02 01|50 79 00 75|00 02 00 F7
                         ^^       ^^
 Chain 2:
-F0 7E 7F 00 02 01 50 79 02 75 00 00 00 F7
+F0 7E 7F 00 02 01|50 79 02 75|00 00 00 F7
                         ^^       ^^
 Chain 3:
-F0 7E 7F 00 02 01 50 79 04 75 00 00 00 F7
+F0 7E 7F 00 02 01|50 79 04 75|00 00 00 F7
                         ^^       ^^
 Chain 4:
-F0 7E 7F 00 02 01 50 79 06 75 00 00 00 F7
+F0 7E 7F 00 02 01|50 79 06 75|00 00 00 F7
                         ^^       ^^
 Chain 1+2:
-F0 7E 7F 00 02 01 50 79 00 75 00 02 00 00 00 F7
+F0 7E 7F 00 02 01|50 79 00 75|00 02 00 00 00 F7
                         ^^       ^^
 Chain 2+3:
-F0 7E 7F 00 02 01 50 79 02 75 00 00 00 00 00 F7
+F0 7E 7F 00 02 01|50 79 02 75|00 00 00 00 00 F7
                         ^^       ^^
+
+Chain 50..59
+F0 7E 7F 00 02 01|50 79 62 75|00 00 00 00 00 00 00 00=00 00 00 00 00 00 00 00=00 00 00 00 00 00 00 F7 
+
+Chain 118..128
+F0 7E 7F 00 02 01|70 79 6A 75|00 00 00 00 00 00 00 00=00 00 00 00 00 00 00 00=00 00 00 00 00 00 00 00=00 00 F7 
+
+Ogni chain incrementa i dati di 2 bytes. Poi vanno messi sempre a gruppi
+di 8, con il primo byte dell'ottetto che è la solita mask. PERO' sembra
+che le mask qui siano sempre a 0x00.
+
+I 2 bytes per ogni chain sono il tipo di controllo utilizzato
+per lo switch.
+I valori possibili per il primo byte sono:
+0x00: off
+0x01: pedale 1
+0x02: pedale 2
+0x03: pedale 3
+0x04: func key f6
+0x05: enter button
+0x06: inc
+0x07: dec
+0x08: cursor keys
+0x09: numeric pad
+0x0A: Nota
+
+Nel secondo byte, nel caso della nota, salvo il valore,
+avendo tipo 0x00 la nota A0, e via a salire.
+
 
 =========== DATA ============
 Ho 256 posizioni, per ogni posizione devo salvare:
@@ -257,15 +294,6 @@ F0 7E 7F 00 02 01 50 03 50 70 | 7F...
 F0 7E 7F 00 02 01 70 03 08 70 | 7F...
 F0 7E 7F 00 02 01 70 03 40 70 | 7F...
                   ^^ ^^ ^^
-01010000 00000010 00000000
-01010000 00000010 00111000
-01010000 00000010 01110000
-01110000 00000010 00101000
-01110000 00000010 01100000
-01010000 00000011 00011000
-01010000 00000011 01010000
-01110000 00000011 00001000
-01110000 00000011 01000000
 
 Analizziamo un msg DATA vuoto: (chain 3)
 F0 7E 7F 00 02 01 50 04 00 70 | 7F (<== 64 volte questo byte, che è 127 in decimale)
@@ -313,25 +341,6 @@ F0 7E 7F 00 02 01 50 03 48 70 | ...
 F0 7E 7F 00 02 01 70 03 00 70 | ...
 F0 7E 7F 00 02 01 70 03 38 70 | ...
 
-01010000 00000000 00000000
-01010000 00000000 00111000
-01010000 00000000 01110000
-01110000 00000000 00101000 *
-01110000 00000000 01100000
-01010000 00000001 00011000 *
-01010000 00000001 01010000
-01110000 00000001 00001000 *
-01110000 00000001 01000000
-
-01110000 00000001 01111000
-01010000 00000010 00110000 *
-01010000 00000010 01101000
-01110000 00000010 00100000 *
-01110000 00000010 01011000
-01010000 00000011 00010000 *
-01010000 00000011 01001000
-01110000 00000011 00000000 *
-01110000 00000011 00111000
 
 Regola:
 Condizione iniziale:
@@ -347,7 +356,6 @@ incremento il 2° byte di 1.
 
 
 Vecchie domande (inutili oramai)
-* Il primo dei tre bytes può essere o 50 o 70. Perché?
 * Il secondo è influenzato dal numero della chain, però aumenta man mano
 che scorrono i messaggi.
 La chain 1 ha byte 0x00, e ad ogni chain viene incrementato di 2. Quindi
