@@ -13,7 +13,7 @@ public class Main {
 		
 		Display display = new Display();
 		//WinCanzone winCanzone = new WinCanzone(display);
-		WinScaletta win = new WinScaletta(display);
+		new WinScaletta(display);
 
 	}
 
