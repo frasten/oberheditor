@@ -36,7 +36,7 @@ public class WinCanzone {
 		txtNome = new Text(win, SWT.BORDER);
 		txtNome.pack();
 
-		txtNome.setSize(new Point(240, txtNome.getSize().y));
+		txtNome.setSize(240, txtNome.getSize().y);
 		txtNome.setLocation(120, 10);
 		
 		Label lblListaPatch = new Label(win, SWT.NONE);
@@ -87,7 +87,12 @@ public class WinCanzone {
 			public void widgetSelected(SelectionEvent e) {
 				listPatches.add(cmbBanco.getItem(cmbBanco.getSelectionIndex()) + "-" +
 						String.format("%03d", Integer.parseInt(txtPatch.getText()))
-				);
+				);/*
+				ScrollBar sb = listPatches.getVerticalBar();
+//					sb.setMaximum(sb.getMaximum() + sb.getIncrement());
+				listPatches.update();
+				sb.setSelection(sb.getMaximum());
+				System.out.println(sb.getMaximum());*/
 				txtPatch.setSelection(txtPatch.getSelection() + 1);
 				txtPatch.setFocus();
 			}
