@@ -194,7 +194,7 @@ ceil((n_chains * 12) / 56)
 ========= 1° FOOTER =========== (in realtà è solo l'ultimo dei DATA)
 
 Chain 1:
-F0 7E 7F 00 02 01 70 01 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
+F0 7E 7F 00 02 01|70 01 78 70|7F 7F 7F 7F 7F 7F 7F 7F|40 7F F7
 
 Chain 2:
 F0 7E 7F 00 02 01 70 03 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
@@ -406,7 +406,9 @@ Continuo finché non arrivo alla fine.
 Ho per ogni messaggio 56 bytes di dati (2bytes per patch perché ho banco
 + patch) ==> 28 patch per messaggio = 252 patches totali. Non dovevano
 essere 256?
-
+Infatti con una chain sola, le ultime 4 patch vanno nell'ultima riga dei
+dati, della quale mi ero dimenticato. Ricordarsi di mettere l'ultima mask
+corretta, in base a quanti byte avanzano nell'ultimo ottetto.
 
 
 
@@ -415,8 +417,12 @@ SCOPERTA!!! (credo)
 il "separatore" 0x00 (0), oppure 0x7F (127), in realtà è una maschera:
 se ho
 0x00: 00000000
-0x7F: 11111111
+0x7F: 01111111
 0x1F: 00011111
+0x40: 01000000 => avanza 1 byte poi finisce
+0x70: 01110000 => avanzano 3 bytes poi finisce
+0x78: 01111000 => avanzano 4 bytes poi finisce
+0x60: 01100000 => avanzano 2 bytes poi finisce
 con 0 che indica un byte valido, 1 che indica un byte inutile.
 
 Visto che è sempre ogni 8 bytes, indica se i prossimi valori (incluso se
