@@ -1,5 +1,6 @@
 package oberheditor.gui;
 
+import java.util.Arrays;
 import java.util.Vector;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -10,71 +11,76 @@ import oberheditor.SysexReceiver;
 
 public class CreatoreMessaggi {
 	private Scaletta scaletta;
-	private Vector<Byte> HEAD_MSG; 
+	private byte[] HEAD_MSG; 
 	
 	
 	public CreatoreMessaggi(Scaletta scaletta) {
 		// TODO Auto-generated constructor stub
 		this.scaletta = scaletta;
-		HEAD_MSG = new Vector<Byte>();
-		HEAD_MSG.add((byte) 0xF0);
-		HEAD_MSG.add((byte) 0x7E);
-		HEAD_MSG.add((byte) 0x7F);
-		HEAD_MSG.add((byte) 0x00);
-		HEAD_MSG.add((byte) 0x02);
-		HEAD_MSG.add((byte) 0x01);
+		
+		HEAD_MSG = new byte[] {(byte) 0xF0, (byte) 0x7E, (byte) 0x7F, (byte) 0x00, (byte) 0x02, (byte) 0x01};
 	}
 
 	public Vector<SysexMessage> creaMessaggi() {
+		int contatore;
 		if (scaletta == null) {
 			System.out.println("Errore: scaletta non caricata.");
 			return null;
 		}
 		Vector<SysexMessage> result = new Vector<SysexMessage>();
 		
+		/********** TEEEEEEEEMPPPP ************/
+		int id_chain = 11;
+		//String nomeChain = "Silent BlackRose";
+		String nomeChain = "SILENT MIDIAN";
+		nomeChain = nomeChain.substring(0,12);
+		String.format("%1$-" + 12 + "s", nomeChain); // Pad right
+		// pad left: String.format("%1$#" + n + "s", s);
+		/********** TEEEEEEEEMPPPP ************/
+		
+		
 		/****** HEADER *******/
 		boolean finito = false;
 		
-		int id_chain = 0;
-//		String nomeChain = "Silent BlackRose";
-		String nomeChain = "SILENT MIDIAN";
-		nomeChain = nomeChain.substring(0,12);
-		// Pad right
-		String.format("%1$-" + 12 + "s", nomeChain);
-		// pad left: String.format("%1$#" + n + "s", s);
 		
-		int contatore = 12 * id_chain;
+		contatore = 12 * id_chain;
 		
 		while (!finito) {
-			Vector<Byte> messaggio = new Vector<Byte>();
-			messaggio.addAll(HEAD_MSG);
-			// Calcolo i 4 bytes ADDR
-			messaggio.addAll(calcolaAddrBytes(contatore, 0x7A, 0x75));
+			int puntatore = 0;
+			byte[] bytes = new byte[75];
+			Arrays.fill(bytes, (byte)0xFF); // Valore non valido, per capire dove finisce
+			for (int i = 0; i <= 5; i++) {
+				bytes[i] = HEAD_MSG[i];
+			}
 			
+			// Calcolo i 4 bytes ADDR
+			byte[] addr = calcolaAddrBytes(contatore, 0x7A, 0x75);
+			for (int i = 0; i < addr.length; i++) {
+				bytes[6 + i] = addr[i];
+			}
+			
+			puntatore = 10; // 6 head + 4 addr
+			// Nome scaletta
 			char[] nomi = nomeChain.toCharArray();
 			for (int i = 0; i < nomi.length; i++) {
 				if (i % 7 == 0) {
 					// metto la maschera, che qui è sempre 0x00
-					messaggio.add((byte) 0x00);
+					bytes[puntatore] = (byte) 0x00;
+					puntatore++;
 				}
-				messaggio.add((byte) nomi[i]);
+				bytes[puntatore] = (byte) nomi[i];
+				puntatore++;
 			}
 			
 			// Byte di chiusura
-			messaggio.add((byte) 0xF7);
+			bytes[puntatore] = (byte) 0xF7;
 			
-			for (Byte miobyte : messaggio) {
-				System.out.print(SysexReceiver.hexDigits[(miobyte & 0xF0) >> 4]);
-				System.out.print(SysexReceiver.hexDigits[(miobyte & 0x0F)] + " ");
-
-			}
-			byte[] msgByteArray = new byte[messaggio.size()];
-			for (int i = 0; i < messaggio.size(); i++) {
-				msgByteArray[i] = messaggio.get(i).byteValue();
-			}
+			System.out.println(SysexReceiver.getHexString(bytes));
+			
 			SysexMessage sysex = new SysexMessage();
 			try {
-				sysex.setMessage(msgByteArray, msgByteArray.length);
+				sysex.setMessage(bytes, puntatore + 1);
+				System.out.println(SysexReceiver.getHexString(sysex.getMessage()));
 			} catch (InvalidMidiDataException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -87,32 +93,28 @@ public class CreatoreMessaggi {
 		
 		/****** DATA *******/
 		
+		
 		/****** FOOTER *******/
 		
 		
 		return null;
 	}
 	
-	private Vector<Byte> calcolaAddrBytes(int contatore, int start2, int start4) {
-		Vector<Byte> result = new Vector<Byte>();
-		
-		String binario = Integer.toBinaryString(contatore);
-		binario = "0000000000000000000000".substring(0, 20 - binario.length ()) + binario;
-		String d = binario.substring(binario.length() - 7, binario.length());
-		String c = binario.substring(binario.length() - 8, binario.length() - 7);
-		String b = binario.substring(binario.length() - 15, binario.length() - 8);
-		String a = binario.substring(0, binario.length() - 15);
+	private byte[] calcolaAddrBytes(int contatore, int start2, int start4) {
+		byte[] result = new byte[4];
+		int a = (contatore & ~0x7FFF) >> 15;
+		int b = (contatore & 0x7F00) >> 8;
+		int c = (contatore & 0x80) >> 7;
+		int d = contatore & 0x7F;
 		
 		// ADDR1
-		result.add((byte) (c.equals("0") ? 0x50 : 0x70));
+		result[0] = (byte) (c== 0 ? 0x50 : 0x70);
 		// ADDR2
-		int val_b = Integer.parseInt(b, 2);
-		result.add((byte) (start2 + val_b));
+		result[1] = (byte) (start2 + b);
 		// ADDR3
-		result.add((byte) Integer.parseInt(d, 2));
+		result[2] = (byte) d;
 		// ADDR4
-		int val_a = Integer.parseInt(a, 2);
-		result.add((byte) (start4 + val_a));
+		result[3] = (byte) (start4 + a);
 		return result;
 	}
 
