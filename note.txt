@@ -99,16 +99,16 @@ Questo numero in binario lo suddivido nel seguente modo:
 	ottenendo	il nuovo valore di ADDR4.
 
 Il contatore di partenza si ottiene con queste formule:
-HEADER: contatore =  12 * id_sequenza
-DATA:   contatore = 512 * id_sequenza
-FOOTER: contatore =   2 * id_sequenza
+HEADER: contatore =  12 * id_chain
+DATA:   contatore = 512 * id_chain
+FOOTER: contatore =   2 * id_chain
 
 
 Mask per ottenere i valori di cui ho bisogno:
 ADDR3 1111111    MASK: 0x7F
 ADDR1 1          MASK: 0x80
 ADDR2 1111111    MASK: 0x7F00
-ADDR4 mask negativa di 111111111111111
+ADDR4 mask negativa di 0x7FFF
 
 Se faccio un AND binario con il contatore, dovrei ottenere il valore richiesto.
 
@@ -217,6 +217,7 @@ F0 7E 7F 00 02 01 70 07 70 70 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 60
                      ^^
 
 ========= 2° FOOTER =========== (footer vero)
+
 
 Chain 1:
 F0 7E 7F 00 02 01|50 79 00 75|00 02 00 F7
@@ -423,7 +424,7 @@ se ho
 0x70: 01110000 => avanzano 3 bytes poi finisce
 0x78: 01111000 => avanzano 4 bytes poi finisce
 0x60: 01100000 => avanzano 2 bytes poi finisce
-con 0 che indica un byte valido, 1 che indica un byte inutile.
+con 0 che indica un byte valido oppure fuori dal vettore, 1 che indica un byte inutile.
 
 Visto che è sempre ogni 8 bytes, indica se i prossimi valori (incluso se
 stesso) sono validi oppure no.

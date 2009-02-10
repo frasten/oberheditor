@@ -1,6 +1,9 @@
 package oberheditor.gui;
 
-import java.util.Arrays;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Vector;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -30,11 +33,11 @@ public class CreatoreMessaggi {
 		Vector<SysexMessage> result = new Vector<SysexMessage>();
 		
 		/********** TEEEEEEEEMPPPP ************/
-		int id_chain = 11;
-		//String nomeChain = "Silent BlackRose";
-		String nomeChain = "SILENT MIDIAN";
+		int id_chain = 0;
+		String nomeChain = this.scaletta.getNome();
+		nomeChain = String.format("%1$-" + 12 + "s", nomeChain); // Pad right
 		nomeChain = nomeChain.substring(0,12);
-		String.format("%1$-" + 12 + "s", nomeChain); // Pad right
+		
 		// pad left: String.format("%1$#" + n + "s", s);
 		/********** TEEEEEEEEMPPPP ************/
 		
@@ -48,8 +51,7 @@ public class CreatoreMessaggi {
 		while (!finito) {
 			int puntatore = 0;
 			byte[] bytes = new byte[75];
-			Arrays.fill(bytes, (byte)0xFF); // Valore non valido, per capire dove finisce
-			for (int i = 0; i <= 5; i++) {
+			for (int i = 0; i < 6; i++) {
 				bytes[i] = HEAD_MSG[i];
 			}
 			
@@ -65,17 +67,15 @@ public class CreatoreMessaggi {
 			for (int i = 0; i < nomi.length; i++) {
 				if (i % 7 == 0) {
 					// metto la maschera, che qui è sempre 0x00
-					bytes[puntatore] = (byte) 0x00;
-					puntatore++;
+					bytes[puntatore++] = (byte) 0x00;
 				}
-				bytes[puntatore] = (byte) nomi[i];
-				puntatore++;
+				bytes[puntatore++] = (byte) nomi[i];
 			}
 			
 			// Byte di chiusura
 			bytes[puntatore] = (byte) 0xF7;
 			
-			System.out.println(SysexReceiver.getHexString(bytes));
+			//System.out.println(SysexReceiver.getHexString(bytes));
 			
 			SysexMessage sysex = new SysexMessage();
 			try {
@@ -92,14 +92,171 @@ public class CreatoreMessaggi {
 		}
 		
 		/****** DATA *******/
+		finito = false;
+		contatore = 512 * id_chain;
+		
+		// Prendo i dati veri e propri
+		byte[] dati = scaletta.toByteArray();
+		int puntatoreDati = 0;
+		
+		while (!finito) {
+			int puntatore = 0;
+			byte[] bytes = new byte[75];
+			for (int i = 0; i < 6; i++) {
+				bytes[i] = HEAD_MSG[i];
+			}
+			
+			// Calcolo i 4 bytes ADDR
+			byte[] addr = calcolaAddrBytes(contatore, 0x00, 0x70);
+			for (int i = 0; i < addr.length; i++) {
+				bytes[6 + i] = addr[i];
+			}
+			
+			puntatore = 10; // 6 head + 4 addr
+			// Dati veri e propri
+			for (int i = 0; i < dati.length; i++) {
+				if (i % 7 == 0) {
+					// metto la maschera
+					byte mask = 0x00;
+					for (int j = 1; j < 8; j++) {
+						int n = 0;
+						if ((puntatoreDati + j - 1) < dati.length && dati[puntatoreDati + j - 1] == (byte) 0xFF)
+						 n = 0x01 << 8 - j - 1;
+						mask |= n;
+					}
+					
+					bytes[puntatore++] = (byte) mask; // TODO: mettere la maschera vera
+				}
+				if (dati[puntatoreDati] == (byte) 0xFF) {
+					// Ho finito i dati reali, riempio con 0x7F
+					bytes[puntatore++] = (byte) 0x7F;
+					puntatoreDati++;
+				}
+				else {
+					bytes[puntatore++] = (byte) dati[puntatoreDati++];
+				}
+				
+				if (puntatore >= bytes.length - 1) { // -1 perche` l'ultimo e' il byte di chiusura
+					// Continuo al prossimo giro
+					break;
+				}
+				if (puntatoreDati >= dati.length) {
+					finito = true;
+					break; // finito
+				}
+			}
+			
+			// Byte di chiusura
+			bytes[puntatore] = (byte) 0xF7;
+			
+			contatore += 0x38;
+			
+			//System.out.println(SysexReceiver.getHexString(bytes));
+			
+			SysexMessage sysex = new SysexMessage();
+			try {
+				sysex.setMessage(bytes, puntatore + 1);
+				System.out.println(SysexReceiver.getHexString(sysex.getMessage()));
+			} catch (InvalidMidiDataException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+			result.add(sysex);
+		}
+		
 		
 		
 		/****** FOOTER *******/
+		finito = false;
+		contatore = 2 * id_chain;
 		
+		dati = new byte[2]; // fisso, sarà 2 * quantità chains
+		for (int i = 0; i < dati.length;i++) {
+			// Controllo per il cambio: 0x02 = pedale 2
+			dati[i] = (byte) (i % 2 == 0 ? 0x02 : 0x00);
+		}
 		
-		return null;
+		puntatoreDati = 0;
+		while (!finito) {
+			int puntatore = 0;
+			byte[] bytes = new byte[75];
+			for (int i = 0; i < 6; i++) {
+				bytes[i] = HEAD_MSG[i];
+			}
+			
+			// Calcolo i 4 bytes ADDR
+			byte[] addr = calcolaAddrBytes(contatore, 0x79, 0x75);
+			for (int i = 0; i < addr.length; i++) {
+				bytes[6 + i] = addr[i];
+			}
+			
+			puntatore = 10; // 6 head + 4 addr
+			// Dati veri e propri
+			for (int i = 0; i < dati.length; i++) {
+				if (i % 7 == 0) {
+					// metto la maschera
+					bytes[puntatore++] = (byte) 0x00; // la maschera è sempre 0x00 nel footer
+				}
+				bytes[puntatore++] = (byte) dati[puntatoreDati++];
+				
+				if (puntatore >= bytes.length - 1) { // -1 perche` l'ultimo e' il byte di chiusura
+					// Continuo al prossimo giro
+					break;
+				}
+				if (puntatoreDati >= dati.length) {
+					finito = true;
+					break; // finito
+				}
+			}
+			
+			// Byte di chiusura
+			bytes[puntatore] = (byte) 0xF7;
+			
+			contatore += 0x38;
+			
+			//System.out.println(SysexReceiver.getHexString(bytes));
+			
+			SysexMessage sysex = new SysexMessage();
+			try {
+				sysex.setMessage(bytes, puntatore + 1);
+				System.out.println(SysexReceiver.getHexString(sysex.getMessage()));
+			} catch (InvalidMidiDataException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+			result.add(sysex);
+			finito = true; // TODO: non è vero, temporaneo
+		}
+		
+		salvaSyx(result);
+		return result;
 	}
 	
+	private void salvaSyx(Vector<SysexMessage> messaggi) {
+		// TODO Auto-generated method stub
+	// Salvataggio
+		FileOutputStream fos; 
+    DataOutputStream dos;
+
+    try {
+      File file= new File("scaletta.syx");
+      fos = new FileOutputStream(file);
+      dos=new DataOutputStream(fos);
+
+      // Salvo tutti i messaggi
+			for (SysexMessage msg : messaggi) {
+				dos.write(msg.getMessage());
+			}
+			dos.close();
+			
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+	}
+
 	private byte[] calcolaAddrBytes(int contatore, int start2, int start4) {
 		byte[] result = new byte[4];
 		int a = (contatore & ~0x7FFF) >> 15;
