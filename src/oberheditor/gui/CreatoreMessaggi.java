@@ -17,7 +17,6 @@ public class CreatoreMessaggi {
 	private byte[] HEAD_MSG;
 
 	public CreatoreMessaggi(Scaletta scaletta) {
-		// TODO Auto-generated constructor stub
 		this.scaletta = scaletta;
 
 		HEAD_MSG = new byte[] { (byte) 0xF0, (byte) 0x7E, (byte) 0x7F, (byte) 0x00,
@@ -251,7 +250,6 @@ public class CreatoreMessaggi {
 				return null;
 			}
 			result.add(sysex);
-			finito = true; // TODO: non è vero, temporaneo
 		}
 
 		salvaSyx(result);
