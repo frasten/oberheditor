@@ -7,6 +7,7 @@ import javax.sound.midi.SysexMessage;
 
 import oberheditor.Canzone;
 import oberheditor.Scaletta;
+import oberheditor.SysexTransmitter;
 
 import org.eclipse.swt.widgets.*;
 
@@ -21,7 +22,7 @@ public class Main {
 		final char[] BANCHI = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
 		Random rnd = new Random(System.currentTimeMillis());
 		
-		Scaletta scaletta = new Scaletta("SILENT MIDIAN");
+		Scaletta scaletta = new Scaletta("SL BlackRose");
 		
 		Canzone kinslayer = new Canzone("The Kinslayer");
 		kinslayer.setPatches(new String[] {"A-021", "A-022", "A-023", "A-024"});
@@ -71,8 +72,8 @@ public class Main {
 		scaletta.addCanzone(sacrament);
 		scaletta.addCanzone(everdream);
 		scaletta.addCanzone(moondance);
-//		scaletta.addCanzone(elvenpath);
-//		scaletta.addCanzone(fantasmic);
+		scaletta.addCanzone(elvenpath);
+		scaletta.addCanzone(fantasmic);
 		scaletta.addCanzone(deepSilent);
 		scaletta.addCanzone(oceansoul);
 		scaletta.addCanzone(darkChest);
@@ -101,6 +102,9 @@ public class Main {
 		
 		CreatoreMessaggi cm = new CreatoreMessaggi(scaletta);
 		Vector<SysexMessage> messaggi = cm.creaMessaggi();
+		
+		SysexTransmitter transmitter = new SysexTransmitter();
+		transmitter.invia(messaggi);
 		
 		Display display = new Display();
 		//new WinCanzone(display);

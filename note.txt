@@ -1,16 +1,17 @@
 NOTA GENERALE:
 Nessun valore eccetto il primo e l'ultimo byte di ogni sysex (F0 e F7) è
-mai >= 80 (128), perchè probabilmente avrebbe il primo bit a 1, che vuol
-dire che è un dato speciale, immagino.
+mai >= 80 (128), perchè avrebbe il primo bit a 1, riservato per i messaggi
+di stato. Quindi per rappresentare dati più grandi, la Oberheim ha inventato
+un trucco (cfr. Appendice A - codifica a 8 bits)
 
 Chain:
 1 chain:  12 messaggi
 2 chains: 21 messaggi
 
 Quindi probabilmente ho:
-1 messaggio di apertura (HEAD)
+messaggi di apertura (HEAD)
 9 messaggi (* ogni chain) per i dati (DATA)
-2 messaggi di chiusura (FOOT1 e FOOT2)
+messaggi di chiusura (FOOT)
 
 Lunghezza dei messaggi: (inclusivi di apertura 0xF0 e chiusura 0xF7)
 * Caso 1 sola chain:
@@ -18,12 +19,6 @@ HEAD: 25
 DATA: 75
 FOOT1: 21
 FOOT2: 14
-
-* Caso 2 chain:
-HEAD: 39
-DATA: 75
-FOOT1: 30
-FOOT2: 16
 
 [...]
 
@@ -66,6 +61,7 @@ ADDR4: Il primo di ogni serie ha un valore che dipende dal tipo di messaggio:
 			 FOOTER: 
        Se anche incrementando ADDR2 ho overflow oltre 7F, incremento di 1
        ADDR4.
+
 
 Combinazioni di inizio (partendo dalla chain 1), alle quali si sommano:
 HEADER: 50 7A 00 75
@@ -110,7 +106,8 @@ ADDR1 1          MASK: 0x80
 ADDR2 1111111    MASK: 0x7F00
 ADDR4 mask negativa di 0x7FFF
 
-Se faccio un AND binario con il contatore, dovrei ottenere il valore richiesto.
+Se faccio un AND binario tra il contatore e la maschera, ottengo il
+valore richiesto.
 
 
 
@@ -163,9 +160,9 @@ Se la descrizione è più corta di 12 caratteri, riempio con spazi (0x20).
 In caso voglia mettere più di una chain, le concateno, creando una lunga
 descrizione.
 
-Per scriverla, metto sempre 0x00 e 7 caratteri, e ripeto finché non arrivo
-alla fine della/e descrizione/i.
-Il 0x00 è diciamo un separatore.
+Per scriverla, li scrivo con codifica per 8 bits (vedi Appendice A), quindi
+1 byte di codifica + 7 caratteri, e ripeto finché non arrivo alla fine
+della/e descrizione/i.
 
 
 * Il carattere segnato (chain singole)
@@ -186,38 +183,12 @@ questo header verrà suddiviso in vari messaggi.
 
 ** Numero di messaggi occupati dall'header: **
 ho max 64 bytes disponibili per ogni messaggio, ma solo 56 sono utilizzabili
-realmente (gli altri 8 sono mask)
+realmente (gli altri 8 sono bytes di codifica)
 Ho 12 bytes da utilizzare, per ogni chain, quindi il numero di messaggi è:
 ceil((n_chains * 12) / 56)
 
 
-========= 1° FOOTER =========== (in realtà è solo l'ultimo dei DATA)
-
-Chain 1:
-F0 7E 7F 00 02 01|70 01 78 70|7F 7F 7F 7F 7F 7F 7F 7F|40 7F F7
-
-Chain 2:
-F0 7E 7F 00 02 01 70 03 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
-                     ^^
-Chain 3:
-F0 7E 7F 00 02 01 70 05 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
-                     ^^
-Chain 4:
-F0 7E 7F 00 02 01 70 07 78 70 7F 7F 7F 7F 7F 7F 7F 7F 40 7F F7
-                     ^^
-
-Chain 1+2:
-F0 7E 7F 00 02 01 70 03 70 70 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 60 7F 7F F7
-                     ^^
-Chain 2+3:
-F0 7E 7F 00 02 01 70 05 70 70 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 60 7F 7F F7
-                     ^^
-Chain 3+4:
-F0 7E 7F 00 02 01 70 07 70 70 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 7F 60 7F 7F F7
-                     ^^
-
-========= 2° FOOTER =========== (footer vero)
-
+========= FOOTER ===========
 
 Chain 1:
 F0 7E 7F 00 02 01|50 79 00 75|00 02 00 F7
@@ -245,8 +216,8 @@ Chain 118..128
 F0 7E 7F 00 02 01|70 79 6A 75|00 00 00 00 00 00 00 00=00 00 00 00 00 00 00 00=00 00 00 00 00 00 00 00=00 00 F7 
 
 Ogni chain incrementa i dati di 2 bytes. Poi vanno messi sempre a gruppi
-di 8, con il primo byte dell'ottetto che è la solita mask. PERO' sembra
-che le mask qui siano sempre a 0x00.
+di 8, con il primo byte dell'ottetto che il solito byte di codifica.
+
 
 I 2 bytes per ogni chain sono il tipo di controllo utilizzato
 per lo switch.
@@ -269,8 +240,8 @@ avendo tipo 0x00 la nota A0, e via a salire.
 
 =========== DATA ============
 Ho 256 posizioni, per ogni posizione devo salvare:
-Banco (fino alla H [8 valori, 3 bits])
-Patch number (1-128 [128 valori, 7bits])
+Banco (A-H)
+Patch number (1-128)
 
 Analizziamo un msg DATA: (chain 1)
 F0 7E 7F 00 02 01 50 00 00 70 | ...
@@ -343,7 +314,7 @@ F0 7E 7F 00 02 01 70 03 00 70 | ...
 F0 7E 7F 00 02 01 70 03 38 70 | ...
 
 
-Regola:
+Regola (già spiegata nella sezione ADDR):
 Condizione iniziale:
 Byte 1: 0x50
 Byte 2: 2 * id_chain(che parte da zero)
@@ -356,19 +327,6 @@ Se il cambio è da 50 ==> 70, tutto ok, mentre se ho 70 ==> 50, allora
 incremento il 2° byte di 1.
 
 
-Vecchie domande (inutili oramai)
-* Il secondo è influenzato dal numero della chain, però aumenta man mano
-che scorrono i messaggi.
-La chain 1 ha byte 0x00, e ad ogni chain viene incrementato di 2. Quindi
-ad esempio la chain 3 ha 0x04.
-* Il terzo viene aumentato sempre di 0x38 (56), ma non supera mai 0x80
-(128).
-Se lo raggiunge o supera, ne metto solo il modulo. (se dovessi avere 0x80,
-metterei 0x00).
-
-
-Quindi abbiamo 3 byte che cambiano, anche se tra una chain e l'altra solo
-il secondo varia.
 
 Analizziamo i 64bytes di dati effettivi.
 00 41 15 41 16 41 17 41 00 18 41 16 41 15
@@ -388,45 +346,48 @@ La scaletta vera dovrebbe essere:
 112: A-127
 113: B-001
 
-Banco:
- A: 01000001
- B: 01000010
-?C: 01000011
-?D: 01000100
-?E: 01000101
-?F: 01000110
-?G: 01000111
-?H: 01001000 ???
+** Banco: **
+A: 0x41
+B: 0x42
+C: 0x43
+D: 0x44
+E: 0x45
+F: 0x46
+G: 0x47
+H: 0x48
 
 Alterno Banco - Patch, e li scrivo alternati a gruppi così formati:
-0x00 (separatore)
+1 byte di codifica
 7 bytes delle alternanze
 
 Continuo finché non arrivo alla fine.
+Quando ho posizioni vuote (non utilizzate), metto il valore 0xFF sia al
+banco che al numero patch, ma per la codifica si trasforma in 0x7F (vedi
+Appendice A)
+
 
 Ho per ogni messaggio 56 bytes di dati (2bytes per patch perché ho banco
-+ patch) ==> 28 patch per messaggio = 252 patches totali. Non dovevano
-essere 256?
-Infatti con una chain sola, le ultime 4 patch vanno nell'ultima riga dei
-dati, della quale mi ero dimenticato. Ricordarsi di mettere l'ultima mask
-corretta, in base a quanti byte avanzano nell'ultimo ottetto.
++ patch) ==> 28 patch per messaggio.
 
 
+== Appendice A - Codifica a 8 bits ==
 
+Le parole midi sono di dimensione 1 byte (8bits). Però il primo bit (MSB)
+è il cosiddetto "bit di stato". Se è impostato a 0, il byte è di dati,
+altrimenti è un byte di stato. Quindi mi rimangono disponibili solo 7 bits,
+ottenendo un range di valori 0-127.
+Come rappresentare i valori 128-255? La Oberheim utilizza questo sistema:
+Mette i bytes a gruppi di 8 bytes, con il primo degli otto che è un byte
+di codifica, e i restanti 7 di dati reali.
+In questo primo byte gli 1 in binario hanno una funzione speciale.
+Un bit a 1 nella posizione n indica che il byte dell'ottetto nella medesima
+posizione avrebbe il bit più significativo a 1, soppresso perché non permesso
+dal protocollo MIDI.
+Ovviamente il suo primo bit è a 0 (altrimenti saremmo daccapo...).
 
-SCOPERTA!!! (credo)
-il "separatore" 0x00 (0), oppure 0x7F (127), in realtà è una maschera:
-se ho
-0x00: 00000000
-0x7F: 01111111
-0x1F: 00011111
-0x40: 01000000 => avanza 1 byte poi finisce
-0x70: 01110000 => avanzano 3 bytes poi finisce
-0x78: 01111000 => avanzano 4 bytes poi finisce
-0x60: 01100000 => avanzano 2 bytes poi finisce
-con 0 che indica un byte valido oppure fuori dal vettore, 1 che indica un byte inutile.
-
-Visto che è sempre ogni 8 bytes, indica se i prossimi valori (incluso se
-stesso) sono validi oppure no.
-Nel caso di 0x1F: 00011111 Avrò la maschera valida, e altri 2 bytes validi.
-Il resto non conta. Li riempio comunque a 0x7F (127)
+Esempio: 07 36 42 37 42 00 70 21
+         ^^----byte di stato
+0x07 = 00000111
+Gli 1 sono nella posizione 6,7,8, quindi i bytes 0x00, 0x70, 0x21 in realtà
+avevano il primo bit a 1, e quindi il loro vero valore va sommato di
+0x80 (128).
