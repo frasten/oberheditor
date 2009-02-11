@@ -1,5 +1,7 @@
 package oberheditor.gui;
 
+import oberheditor.Database;
+
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;

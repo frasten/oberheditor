@@ -1,13 +1,18 @@
 package oberheditor;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Vector;
+
+import oberheditor.gui.CreatoreMessaggi;
 
 public class Scaletta {
 	private Vector<Canzone> canzoni;
 	private Date data;
 	private String nome;
+	private int id;
 	
 	public Scaletta(String nome) {
 		this();
@@ -16,6 +21,50 @@ public class Scaletta {
 	
 	public Scaletta() {
 		canzoni = new Vector<Canzone>();
+	}
+
+	/**
+	 * Creo una scaletta caricandola dal database.
+	 * @param id L'id della scaletta
+	 */
+	public Scaletta(int id) {
+		this();
+		if (id <= 0) throw new IllegalArgumentException("L'id deve essere > 0.");
+		
+		ResultSet rs;
+		
+		try {
+			rs = Database.query("SELECT * FROM scaletta WHERE id = ?", id + "");
+			boolean trovato = false;
+			while (rs.next()) {
+				trovato = true;
+				setId(rs.getInt("id"));
+				setNome(rs.getString("nome"));
+			  // rs.getString("data");
+			}
+			rs.close();
+			rs.getStatement().close();
+
+			if (!trovato) {
+				 throw new IllegalArgumentException("Non c'è nessuna scaletta salvata con questo ID.");
+			}
+			
+			// Carico la lista delle canzoni
+			rs = Database.query("SELECT id_canzone FROM scaletta_canzone WHERE id_scaletta = ? ORDER BY ordine ASC", id + "");
+			while (rs.next()) {
+				Canzone song = new Canzone(rs.getInt("id_canzone"));
+				addCanzone(song);
+			}
+			rs.close();
+			rs.getStatement().close();
+
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	  
+
 	}
 
 	public Vector<Canzone> getCanzoni() {
@@ -64,4 +113,53 @@ public class Scaletta {
 		return nome;
 	}
 	
+	public boolean salvaDB() {
+		Database.creaTable(Database.TBL_CANZONE | Database.TBL_SCALETTA | Database.TBL_SCALETTA_CANZONE);
+		
+		// Salvo le canzoni
+		for (Canzone canzone : getCanzoni()) {
+			canzone.salvaDB();
+		}
+		// Salvo questa scaletta
+		if (getId() > 0) {
+    	// Gia' salvata nel db, updato
+    	Database.queryUp(
+  				"UPDATE scaletta SET nome=?, data=? WHERE id=?",
+  				this.getNome(), "", getId()+"");
+    }
+    else {
+    	// Nuova canzone, la inserisco
+    	int id = Database.queryUp(
+  				"INSERT INTO scaletta(nome, data) VALUES (?, ?);",
+  				this.getNome(), "");
+  		setId(id);
+    }
+		if (getId() <= 0) {
+			System.out.println("Errore nel salvataggio dei dati della scaletta nel database.");
+			return false;
+		}
+		// Ordine della scaletta
+		// Per prima cosa elimino il vecchio ordine, se ce n'era già uno
+		Database.queryUp(
+				"DELETE FROM scaletta_canzone WHERE id_scaletta = ?",
+				Integer.toString(getId()));
+		
+		// Metto il nuovo ordine
+		for (int i = 0; i < getCanzoni().size(); i++) {
+			Database.queryUp(
+					"INSERT INTO scaletta_canzone (id_scaletta, id_canzone, ordine) VALUES(?,?,?)",
+					getId()+"", getCanzoni().get(i).getId()+"", i+"");
+		}
+		
+		return true;
+	}
+
+	private void setId(int id) {
+		if (id <= 0) throw new IllegalArgumentException();
+		this.id = id;
+	}
+
+	public int getId() {
+		return id;
+	}
 }
