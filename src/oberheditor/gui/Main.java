@@ -1,6 +1,5 @@
 package oberheditor.gui;
 
-import java.util.Random;
 import java.util.Vector;
 
 import javax.sound.midi.SysexMessage;
@@ -19,8 +18,6 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		Database.init();
-		final char[] BANCHI = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
-		Random rnd = new Random(System.currentTimeMillis());
 		
 		Scaletta scaletta = new Scaletta("SL BlackRose");
 		
@@ -89,27 +86,20 @@ public class Main {
 		scaletta.addCanzone(ghostLove);
 		scaletta.addCanzone(endOfAllHope);
 		
-		/*
-		for (int i = 1;i <= 22; i++) {
-			Canzone song = new Canzone();
-			Vector<String> patches = new Vector<String>();
-			for (int j = 0; j < rnd.nextInt(10); j++) {
-				patches.add(BANCHI[rnd.nextInt(8)]+"-"+rnd.nextInt(128));				
-			}
-			song.setPatches(patches);
-			scaletta.addCanzone(song);
-		}*/
-		
 		CreatoreMessaggi cm = new CreatoreMessaggi(scaletta);
 		Vector<SysexMessage> messaggi = cm.creaMessaggi();
 		
 		SysexTransmitter transmitter = new SysexTransmitter();
 		transmitter.invia(messaggi);
 		
+		if (false) mostraInterfaccia();
+	}
+
+	private static void mostraInterfaccia() {
 		Display display = new Display();
 		//new WinCanzone(display);
-		//new WinScaletta(display);
-
+		new WinScaletta(display);
+		
 	}
 
 }

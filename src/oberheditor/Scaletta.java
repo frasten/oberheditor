@@ -40,8 +40,8 @@ public class Scaletta {
 	
 	public byte[] toByteArray() {
 		byte[] result = new byte[512];// 256 posizioni * 2 bytes l'una
-		/* Lo riempio con il valore 0xFF, non valido, cosi' posso capire
-		 * quando son finiti i valori veri e quando iniziare a riempire con 0x7F */
+		/* Lo riempio con il valore 0xFF, che però essendo > 0x80 verrà
+		 * trasformato in 0x7F in fase di codifica. */
 		Arrays.fill(result, (byte) 0xFF);
 		
 		int contatore = 0;
@@ -50,7 +50,7 @@ public class Scaletta {
 				// Banco
 				result[contatore++] = (byte) ((int) patch.charAt(0) - (int) 'A' + 0x41);
 				// Patch
-				result[contatore++] = (byte) Integer.parseInt(patch.substring(2)); // FIXME: +1???
+				result[contatore++] = (byte) Integer.parseInt(patch.substring(2));
 			}
 		}
 		return result;
