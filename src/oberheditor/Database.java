@@ -25,7 +25,7 @@ public class Database {
 			System.exit(1);
 		}
 	}
-	
+		
 	public static void close() {
 		try {
 			conn.close();
@@ -37,6 +37,7 @@ public class Database {
 	
 	public static ResultSet query(String query, String ... args) {
 		try {
+			
 			PreparedStatement prep = conn.prepareStatement(query);
 			for (int i = 0; i < args.length; i++) {
 				prep.setString(i+1, new String(args[i]));
@@ -93,7 +94,12 @@ public class Database {
 	/**
 	 * Creo il database e lo popolo
 	 */
-	public void crea() {
+	public static void crea() {
+		Database.creaTable(Database.TBL_CANZONE | Database.TBL_SCALETTA | Database.TBL_SCALETTA_CANZONE);
+		queryUp("DELETE FROM scaletta");
+		queryUp("DELETE FROM scaletta_canzone");
+		queryUp("DELETE FROM canzone");
+		
 		Scaletta scaletta = new Scaletta("SL BlackRose");
 		Canzone kinslayer = new Canzone("The Kinslayer");
 		kinslayer.setPatches(new String[] {"A-021", "A-022", "A-023", "A-024"});
@@ -138,8 +144,9 @@ public class Database {
 		Canzone endOfAllHope = new Canzone("End of All Hope");
 		endOfAllHope.setPatches(new String[] {"B-051", "B-052", "B-053", "B-054", "B-055", "B-056"});
 				
-		scaletta.addCanzone(kinslayer);
 		scaletta.addCanzone(shesMySin);
+		scaletta.addCanzone(kinslayer);
+		scaletta.addCanzone(endOfAllHope);
 		scaletta.addCanzone(sacrament);
 		scaletta.addCanzone(everdream);
 		scaletta.addCanzone(moondance);
@@ -158,7 +165,6 @@ public class Database {
 		scaletta.addCanzone(wishmaster);
 		scaletta.addCanzone(wishIHadAnAngel);
 		scaletta.addCanzone(ghostLove);
-		scaletta.addCanzone(endOfAllHope);
 		
 		scaletta.salvaDB();
 	}

@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Vector;
 
-import oberheditor.gui.CreatoreMessaggi;
-
 public class Scaletta {
 	private Vector<Canzone> canzoni;
 	private Date data;
@@ -30,7 +28,7 @@ public class Scaletta {
 	public Scaletta(int id) {
 		this();
 		if (id <= 0) throw new IllegalArgumentException("L'id deve essere > 0.");
-		
+		Database.creaTable(Database.TBL_CANZONE | Database.TBL_SCALETTA | Database.TBL_SCALETTA_CANZONE);
 		ResultSet rs;
 		
 		try {
@@ -51,13 +49,17 @@ public class Scaletta {
 			
 			// Carico la lista delle canzoni
 			rs = Database.query("SELECT id_canzone FROM scaletta_canzone WHERE id_scaletta = ? ORDER BY ordine ASC", id + "");
+			Vector<Integer> lista_id = new Vector<Integer>();
 			while (rs.next()) {
-				Canzone song = new Canzone(rs.getInt("id_canzone"));
-				addCanzone(song);
+				lista_id.add(rs.getInt("id_canzone"));
 			}
 			rs.close();
 			rs.getStatement().close();
-
+			for (Integer id_song : lista_id) {
+				Canzone song = new Canzone(id_song);
+				addCanzone(song);				
+			}
+			
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -85,6 +87,15 @@ public class Scaletta {
 	
 	public void addCanzone(Canzone canzone) {
 		canzoni.add(canzone);
+	}
+	
+	/**
+	 * 
+	 * @param canzone
+	 * @param indice la posizione nella scaletta, partendo da 0.
+	 */
+	public void addCanzone(Canzone canzone, int indice) {
+		canzoni.add(indice, canzone);
 	}
 	
 	public byte[] toByteArray() {
@@ -161,5 +172,9 @@ public class Scaletta {
 
 	public int getId() {
 		return id;
+	}
+
+	public void rimuoviCanzone(int indice) {
+		this.canzoni.remove(indice);		
 	}
 }

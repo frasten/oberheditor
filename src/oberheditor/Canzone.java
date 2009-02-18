@@ -26,6 +26,7 @@ public class Canzone {
 		this();
 		if (id <= 0) throw new IllegalArgumentException("L'id deve essere > 0.");
 		
+		Database.creaTable(Database.TBL_CANZONE);
 		ResultSet rs;
 		
 		try {
@@ -43,7 +44,7 @@ public class Canzone {
 
 			if (!trovato) {
 				 throw new IllegalArgumentException("Non c'è nessuna scaletta salvata con questo ID.");
-			}			
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
