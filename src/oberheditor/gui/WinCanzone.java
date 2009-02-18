@@ -212,7 +212,7 @@ public class WinCanzone {
 			public void handleEvent (Event event) {
 				switch (event.detail) {
 					case SWT.TRAVERSE_ESCAPE:
-						win.close ();
+						win.close();
 						event.detail = SWT.TRAVERSE_NONE;
 						event.doit = false;
 						break;

@@ -9,6 +9,8 @@ import oberheditor.Database;
 import oberheditor.Scaletta;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -44,8 +46,6 @@ public class WinScaletta {
 		win.setBounds(pos_x, pos_y, win_w, win_h);
 		
 		FormLayout layout = new FormLayout();
-		/*layout.marginWidth = 5;
-		layout.marginHeight = 5;*/
 		win.setLayout(layout);
 		
 		Menu bar = new Menu (win, SWT.BAR);
@@ -57,11 +57,13 @@ public class WinScaletta {
 		MenuItem item = new MenuItem (submenu, SWT.PUSH);
 		item.addListener (SWT.Selection, new Listener () {
 			public void handleEvent (Event e) {
-				System.out.println ("Select All");
+				scaletta.resetId();
+				scaletta.salvaDB();
+				win.dispose();
 			}
 		});
-		item.setText ("Select &All\tCtrl+A");
-		item.setAccelerator (SWT.MOD1 + 'A');
+		item.setText ("Salva come nuovo"); // \tCtrl+A
+		//item.setAccelerator (SWT.MOD1 + 'A');
 
 		
 		toolBar = new ToolBar (win, SWT.BORDER);
@@ -90,6 +92,15 @@ public class WinScaletta {
 		layTxtNome.top = new FormAttachment(lblNome, -4, SWT.TOP);
 		layTxtNome.width = 250;
 		txtNome.setLayoutData(layTxtNome);
+		
+		txtNome.addFocusListener(new FocusListener() {
+			public void focusGained(FocusEvent e) {}
+
+			public void focusLost(FocusEvent e) {
+				scaletta.setNome(txtNome.getText());
+			}
+			
+		});
 		
 		
 		Label lblData = new Label(win, SWT.NONE);
@@ -166,14 +177,6 @@ public class WinScaletta {
 		layListDisponibili.width = 180;
 		layListDisponibili.bottom = new FormAttachment(listCanzoniScaletta, 0, SWT.BOTTOM);
 		listCanzoniDisponibili.setLayoutData(layListDisponibili);
-		
-		
-		listCanzoniDisponibili.addListener (SWT.Selection, new Listener () {
-			public void handleEvent (Event e) {
-				if (listCanzoniDisponibili.getSelection().length <= 0) return;
-				// FIXME: ma servira' sto listener?
-			}
-		});
 		
 		
 		btnAdd = new Button(win, SWT.PUSH);

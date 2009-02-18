@@ -124,6 +124,7 @@ public class Scaletta {
 		return nome;
 	}
 	
+	
 	public boolean salvaDB() {
 		Database.creaTable(Database.TBL_CANZONE | Database.TBL_SCALETTA | Database.TBL_SCALETTA_CANZONE);
 		
@@ -139,7 +140,7 @@ public class Scaletta {
   				this.getNome(), "", getId()+"");
     }
     else {
-    	// Nuova canzone, la inserisco
+    	// Nuova scaletta, la inserisco
     	int id = Database.queryUp(
   				"INSERT INTO scaletta(nome, data) VALUES (?, ?);",
   				this.getNome(), "");
@@ -176,5 +177,12 @@ public class Scaletta {
 
 	public void rimuoviCanzone(int indice) {
 		this.canzoni.remove(indice);		
+	}
+
+	/**
+	 * Serve per salvare la scaletta come una nuova.
+	 */
+	public void resetId() {
+		this.id = 0;
 	}
 }

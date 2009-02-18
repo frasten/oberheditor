@@ -88,7 +88,6 @@ public class Database {
 		}
 		
 	}
-	//stat.executeUpdate("CREATE TABLE IF NOT EXISTS canzone(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, lista_patch TEXT, lista_desc TEXT);");
 	
 	
 	/**
@@ -143,7 +142,7 @@ public class Database {
 		ghostLove.setPatches(new String[] {"B-040", "B-041", "B-042", "B-043", "B-044", "B-045", "B-046", "B-047", "B-048", "B-049", "B-050"});
 		Canzone endOfAllHope = new Canzone("End of All Hope");
 		endOfAllHope.setPatches(new String[] {"B-051", "B-052", "B-053", "B-054", "B-055", "B-056"});
-				
+		
 		scaletta.addCanzone(shesMySin);
 		scaletta.addCanzone(kinslayer);
 		scaletta.addCanzone(endOfAllHope);

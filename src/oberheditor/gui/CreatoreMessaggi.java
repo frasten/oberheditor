@@ -33,7 +33,7 @@ public class CreatoreMessaggi {
 		}
 		Vector<SysexMessage> result = new Vector<SysexMessage>();
 
-		/********** TEEEEEEEEMPPPP ************/
+		/********** FIXME: TEEEEEEEEMPPPP ************/
 		int id_chain = 1;
 		String nomeChain = this.scaletta.getNome();
 		nomeChain = String.format("%1$-" + 12 + "s", nomeChain); // Pad right
