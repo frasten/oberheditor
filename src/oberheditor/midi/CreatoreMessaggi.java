@@ -1,4 +1,4 @@
-package oberheditor.gui;
+package oberheditor.midi;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -10,7 +10,6 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.SysexMessage;
 
 import oberheditor.Scaletta;
-import oberheditor.SysexReceiver;
 
 public class CreatoreMessaggi {
 	private Scaletta scaletta;

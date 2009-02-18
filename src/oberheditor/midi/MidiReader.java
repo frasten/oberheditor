@@ -1,4 +1,4 @@
-package oberheditor;
+package oberheditor.midi;
 
 /**
  * Voglio:
@@ -16,6 +16,7 @@ import javax.sound.midi.Sequencer;
 import javax.sound.midi.Synthesizer;
 import javax.sound.midi.SysexMessage;
 import javax.sound.midi.Transmitter;
+
 
 import java.io.IOException;
 import java.util.Vector;

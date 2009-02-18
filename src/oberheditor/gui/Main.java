@@ -6,7 +6,8 @@ import javax.sound.midi.SysexMessage;
 
 import oberheditor.Database;
 import oberheditor.Scaletta;
-import oberheditor.SysexTransmitter;
+import oberheditor.midi.CreatoreMessaggi;
+import oberheditor.midi.SysexTransmitter;
 
 import org.eclipse.swt.widgets.*;
 

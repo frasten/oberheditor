@@ -1,4 +1,4 @@
-package oberheditor;
+package oberheditor.midi;
 
 import java.util.Vector;
 

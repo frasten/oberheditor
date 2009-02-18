@@ -1,8 +1,9 @@
-package oberheditor;
+package oberheditor.midi;
 
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.SysexMessage;
+
 
 public class SysexReceiver implements Receiver {
 
