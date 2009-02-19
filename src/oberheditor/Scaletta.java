@@ -17,6 +17,7 @@ public class Scaletta {
 	
 	public Scaletta() {
 		canzoni = new Vector<Canzone>();
+		data = new GregorianCalendar();
 	}
 
 	/**

@@ -27,8 +27,10 @@ public class WinMain {
 	private Button btnModificaScaletta;
 	private Button btnInviaScaletta;
 	private Button btnEliminaScaletta;
+	Display display;
 	
-	public WinMain(Display display) {
+	public WinMain(Display _display) {
+		this.display = _display;
 		win = new Shell(display);
 		win.setText("OberhEditor");
 		
@@ -148,6 +150,53 @@ public class WinMain {
 		btnEliminaScaletta.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (listScalette.getSelectionCount() <= 0) return;
+				// Chiedo conferma con un dialogo
+				final boolean [] conferma = new boolean [1];
+				final Shell dialog = new Shell (win, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+				FormLayout form = new FormLayout ();
+				form.marginWidth = form.marginHeight = 8;
+				dialog.setLayout (form);
+
+				Label label = new Label (dialog, SWT.NONE);
+				label.setText ("Vuoi davvero eliminare la scaletta selezionata?");
+				
+				Button cancel = new Button (dialog, SWT.PUSH);
+				cancel.setText("&Annulla");
+				cancel.setImage(new Image(display, "res/cancel.png"));
+				FormData cancelData = new FormData ();
+				cancelData.top = new FormAttachment(label, 8);
+				cancelData.right = new FormAttachment(50, -5);
+				cancel.setLayoutData(cancelData);
+				
+				
+				final Button ok = new Button(dialog, SWT.PUSH);
+				dialog.setDefaultButton(ok);
+				ok.setText("&OK");
+				ok.setImage(new Image(display, "res/delete.png"));
+				FormData okData = new FormData();
+				okData.left = new FormAttachment(50, 5);
+				okData.top = new FormAttachment(cancel, 0, SWT.TOP);
+				ok.setLayoutData(okData);
+
+				Listener listener = new Listener() {
+					public void handleEvent (Event event) {
+						conferma [0] = event.widget == ok;
+						dialog.close();
+					}
+				};
+				
+				ok.addListener (SWT.Selection, listener);
+				cancel.addListener (SWT.Selection, listener);
+				
+				
+				dialog.pack ();
+				dialog.open ();
+				while (!dialog.isDisposed ()) {
+					if (!display.readAndDispatch ()) display.sleep ();
+				}
+
+				if (!conferma[0]) return;
+				
 				int[] selezione = listScalette.getSelectionIndices();
 				for (int i = selezione.length -1; i >= 0 ; i--) {
 					// dalla lista
