@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.GregorianCalendar;
 import java.util.Vector;
-import java.util.Calendar;
 
 import oberheditor.Canzone;
 import oberheditor.Database;
