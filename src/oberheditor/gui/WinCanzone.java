@@ -226,10 +226,9 @@ public class WinCanzone {
 		
 
 		win.open();
-		while (!win.isDisposed())
-			if (!display.readAndDispatch())
-				display.sleep();
-		display.dispose();
+		while (!win.isDisposed ()) {
+			if (!display.readAndDispatch ()) display.sleep ();
+		}
 	}
 
 

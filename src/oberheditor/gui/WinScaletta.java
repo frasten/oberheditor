@@ -33,9 +33,10 @@ public class WinScaletta {
 	Vector<Canzone> canzoni_disponibili;
 	
 	
-	public WinScaletta(Display display, int ... id_scaletta) {
-		win = new Shell(display);
+	public WinScaletta(Shell parent, int ... id_scaletta) {
+		win = new Shell(parent, SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		win.setText("Scaletta");
+		Display display = parent.getDisplay();
 		
 		
 		int win_w = 700;
@@ -59,7 +60,7 @@ public class WinScaletta {
 			public void handleEvent (Event e) {
 				scaletta.resetId();
 				scaletta.salvaDB();
-				win.dispose();
+				win.close();
 			}
 		});
 		item.setText ("Salva come nuovo"); // \tCtrl+A
@@ -124,7 +125,7 @@ public class WinScaletta {
 		btnSalva.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				scaletta.salvaDB();
-				win.dispose();
+				win.close();
 			}
 		});
 		Image imgSalva = new Image(display, "res/save.png");
@@ -138,7 +139,7 @@ public class WinScaletta {
 		Button btnAnnulla = new Button(win, SWT.PUSH);
 		btnAnnulla.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				win.dispose();
+				win.close();
 			}
 		});
 		Image imgAnnulla = new Image(display, "res/cancel.png");
@@ -294,8 +295,11 @@ public class WinScaletta {
 			this.id_scaletta = id_scaletta[0];
 			caricaScalettaDatabase(this.id_scaletta);
 		}
+		else {
+			scaletta = new Scaletta();
+		}
 		
-		
+		refreshTasti();
 		
 		/*
 		DateTime calendario = new DateTime (win, SWT.CALENDAR | SWT.BORDER);
@@ -312,10 +316,9 @@ public class WinScaletta {
 		
 		
 		win.open();
-		while (!win.isDisposed())
-			if (!display.readAndDispatch())
-				display.sleep();
-		display.dispose();
+		while (!win.isDisposed()) {
+			if (!display.readAndDispatch()) display.sleep ();
+		}
 	}
 
 	protected void refreshTasti() {
@@ -371,7 +374,6 @@ public class WinScaletta {
 			listCanzoniScaletta.add(song.getNome());
 		}
 		listCanzoniScaletta.select(0);
-		refreshTasti();
 	}
 
 }

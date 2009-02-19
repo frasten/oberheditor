@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="public" author="true" classpath="../org.eclipse.swt:lib/sqlitejdbc-v054.jar:lib/java-getopt-1.0.13.jar:../org.eclipse.swt/swt.jar" destdir="doc" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="oberheditor,oberheditor.midi,oberheditor.gui" source="1.6" sourcepath="src" splitindex="true" use="true" version="true"/>
+    </target>
+</project>
