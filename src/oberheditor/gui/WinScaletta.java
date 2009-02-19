@@ -2,7 +2,9 @@ package oberheditor.gui;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.GregorianCalendar;
 import java.util.Vector;
+import java.util.Calendar;
 
 import oberheditor.Canzone;
 import oberheditor.Database;
@@ -28,6 +30,7 @@ public class WinScaletta {
 	ToolBar toolBar;
 	Scaletta scaletta;
 	Vector<Canzone> canzoni_disponibili;
+	private DateTime data;
 	
 	
 	public WinScaletta(Shell parent, int ... id_scaletta) {
@@ -108,12 +111,19 @@ public class WinScaletta {
 		layLblData.top = new FormAttachment(lblNome, 0, SWT.TOP);
 		lblData.setLayoutData(layLblData);
 		
-		DateTime data = new DateTime (win, SWT.DATE | SWT.BORDER);
+		data = new DateTime (win, SWT.DATE | SWT.BORDER);
 		FormData layData = new FormData();
 		layData.left = new FormAttachment(lblData, 10, SWT.RIGHT);
 		layData.top = new FormAttachment(txtNome, 0, SWT.TOP);
 		data.setLayoutData(layData);
 		
+		data.addSelectionListener (new SelectionAdapter () {
+	    public void widgetSelected (SelectionEvent e) {
+	    	data.getYear();
+      	scaletta.setData(new GregorianCalendar(data.getYear(),
+      			data.getMonth(), data.getDay()));
+	    }
+	  });
 		
 		/**************************************************
 		 *             PULSANTI FINALI
@@ -367,6 +377,11 @@ public class WinScaletta {
 		
 		scaletta = new Scaletta(id);
 		txtNome.setText(scaletta.getNome());
+		
+		data.setDate(scaletta.getData().get(GregorianCalendar.YEAR),
+				scaletta.getData().get(GregorianCalendar.MONTH),
+				scaletta.getData().get(GregorianCalendar.DATE)
+		);
 		for (Canzone song : scaletta.getCanzoni()) {
 			listCanzoniScaletta.add(song.getNome());
 		}

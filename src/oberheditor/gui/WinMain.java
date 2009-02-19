@@ -2,6 +2,7 @@ package oberheditor.gui;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Vector;
 
 import oberheditor.Database;
@@ -229,7 +230,7 @@ public class WinMain {
 				scalette.add(sc);
 				TableItem item = new TableItem (listScalette, SWT.NONE);
 				item.setText (0, sc.getNome());
-				item.setText (1, ""/*sc.getData().toString()*/);
+				item.setText (1, new SimpleDateFormat("dd/MM/yyyy").format(sc.getData().getTime()));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

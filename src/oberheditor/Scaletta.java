@@ -2,13 +2,11 @@ package oberheditor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Vector;
+import java.util.*;
 
 public class Scaletta {
 	private Vector<Canzone> canzoni;
-	private Date data;
+	private GregorianCalendar data;
 	private String nome;
 	private int id;
 	
@@ -38,7 +36,13 @@ public class Scaletta {
 				trovato = true;
 				setId(rs.getInt("id"));
 				setNome(rs.getString("nome"));
-			  // rs.getString("data");
+				String[] pezzi = rs.getString("data").split("-");
+				if (pezzi.length == 3) {
+					// Solo se ho una data regolare
+					setData(new GregorianCalendar(Integer.parseInt(pezzi[0]),
+						Integer.parseInt(pezzi[1]), Integer.parseInt(pezzi[2])));
+				}
+				else setData(new GregorianCalendar());
 			}
 			rs.close();
 			rs.getStatement().close();
@@ -77,11 +81,11 @@ public class Scaletta {
 		this.canzoni = canzoni;
 	}
 
-	public void setData(Date data) {
+	public void setData(GregorianCalendar data) {
 		this.data = data;
 	}
 
-	public Date getData() {
+	public GregorianCalendar getData() {
 		return data;
 	}
 	
@@ -137,13 +141,17 @@ public class Scaletta {
     	// Gia' salvata nel db, updato
     	Database.queryUp(
   				"UPDATE scaletta SET nome=?, data=? WHERE id=?",
-  				this.getNome(), "", getId()+"");
+  				this.getNome(),
+  				this.getData().get(Calendar.YEAR)+"-"+this.getData().get(Calendar.MONTH)+"-"+this.getData().get(Calendar.DATE),
+  				getId()+"");
     }
     else {
     	// Nuova scaletta, la inserisco
     	int id = Database.queryUp(
   				"INSERT INTO scaletta(nome, data) VALUES (?, ?);",
-  				this.getNome(), "");
+  				this.getNome(),
+  				this.getData().get(Calendar.YEAR)+"-"+this.getData().get(Calendar.MONTH)+"-"+this.getData().get(Calendar.DATE)		
+    	);
   		setId(id);
     }
 		if (getId() <= 0) {
