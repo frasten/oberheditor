@@ -21,7 +21,8 @@ import org.eclipse.swt.widgets.*;
 public class WinInviaSysex {
 	Shell win; // La finestra stessa
 	Scaletta scaletta;
-	private Spinner txtPatch;
+	private Spinner txtChain;
+	private ProgressBar progress;
 	
 	public WinInviaSysex(Shell parent, Scaletta _scaletta) {
 		this.scaletta = _scaletta;
@@ -31,8 +32,8 @@ public class WinInviaSysex {
 		Display display = parent.getDisplay();
 		
 		
-		int win_w = 400;
-		int win_h = 300;
+		int win_w = 300;
+		int win_h = 170;
 		// La metto centrata
 		int pos_x = (display.getBounds().width - win_w) / 2;
 		int pos_y = (display.getBounds().height - win_h) / 2;
@@ -42,28 +43,45 @@ public class WinInviaSysex {
 		win.setLayout(layout);
 		
 		
+		Label lblChain = new Label(win, SWT.NONE);
+		lblChain.setText("Numero della chain: ");
+		FormData layLblChain = new FormData();
+		layLblChain.left = new FormAttachment(0, 10);
+		layLblChain.top = new FormAttachment(0, 15);
+		lblChain.setLayoutData(layLblChain);
+		
+		
 		// Patch
-		txtPatch = new Spinner(win, SWT.BORDER);
-		txtPatch.setMinimum(1);
-		txtPatch.setMaximum(128);
-		txtPatch.setSelection(1);
-		txtPatch.setIncrement(1);
-		txtPatch.setPageIncrement(10);
-		FormData layTxtPatch = new FormData();
-		layTxtPatch.left = new FormAttachment(0, 10);
-		layTxtPatch.top = new FormAttachment(0, 10);
-		txtPatch.setLayoutData(layTxtPatch);
+		txtChain = new Spinner(win, SWT.BORDER);
+		txtChain.setMinimum(1);
+		txtChain.setMaximum(128);
+		txtChain.setSelection(1);
+		txtChain.setIncrement(1);
+		txtChain.setPageIncrement(10);
+		FormData layTxtChain = new FormData();
+		layTxtChain.left = new FormAttachment(lblChain, 10);
+		layTxtChain.top = new FormAttachment(lblChain, -3, SWT.TOP);
+		txtChain.setLayoutData(layTxtChain);
+		
+		progress = new ProgressBar(win, SWT.HORIZONTAL);
+		FormData layProgress = new FormData();
+		layProgress.left = new FormAttachment(0, 20);
+		layProgress.right = new FormAttachment(100, -20);
+		layProgress.top = new FormAttachment(txtChain, 20, SWT.BOTTOM);
+		progress.setLayoutData(layProgress);
 		
 		
 		
 		Button btnInvia = new Button(win, SWT.PUSH);
 		btnInvia.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				inviaScaletta(1);
-				//win.close();
+				if (inviaScaletta(txtChain.getSelection() - 1)) {
+					// Se e' andato tutto bene, chiudo la finestra
+					win.close();
+				}
 			}
 		});
-		Image imgInvia = new Image(display, "res/save.png");
+		Image imgInvia = new Image(display, "res/send.png");
 		btnInvia.setImage(imgInvia);
 		btnInvia.setText("Invia!");
 		FormData layBtnInvia = new FormData();
@@ -71,21 +89,43 @@ public class WinInviaSysex {
 		layBtnInvia.bottom = new FormAttachment(100, -10);
 		btnInvia.setLayoutData(layBtnInvia);
 		
+		Button btnAnnulla = new Button(win, SWT.PUSH);
+		btnAnnulla.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				win.close();
+			}
+		});
+		Image imgAnnulla = new Image(display, "res/cancel.png");
+		btnAnnulla.setImage(imgAnnulla);
+		btnAnnulla.setText("Annulla");
+		FormData layBtnAnnulla = new FormData();
+		layBtnAnnulla.right = new FormAttachment(btnInvia, -10, SWT.LEFT);
+		layBtnAnnulla.top = new FormAttachment(btnInvia, 0, SWT.TOP);
+		btnAnnulla.setLayoutData(layBtnAnnulla);
 		
+		
+		
+		win.setDefaultButton(btnInvia);
 		win.open();
 		while (!win.isDisposed()) {
 			if (!display.readAndDispatch()) display.sleep ();
 		}
 	}
 
-	private void inviaScaletta(int posizione_chain) {
+	private boolean inviaScaletta(int posizione_chain) {
+		boolean tuttoOk = true;
 		CreatoreMessaggi cm = new CreatoreMessaggi(scaletta);
-		Vector<SysexMessage> messaggi = cm.creaMessaggi(txtPatch.getSelection() - 1);
+		Vector<SysexMessage> messaggi = cm.creaMessaggi(posizione_chain);
 		SysexTransmitter transmitter = new SysexTransmitter();
+		progress.setSelection(0);
 		for (int i = 0; i < messaggi.size(); i++) {
-			// TODO: aggiornare la progressbar con percentuale (i+1)*100/messaggi.size()
-			if (!transmitter.invia(messaggi.get(i))) break;
+			if (!transmitter.invia(messaggi.get(i))) {
+				tuttoOk = false;
+				break;
+			}
+			progress.setSelection((i+1)*100/messaggi.size());
 		}
 		transmitter.close();
+		return tuttoOk;
 	}
 }
