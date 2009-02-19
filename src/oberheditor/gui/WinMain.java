@@ -142,7 +142,20 @@ public class WinMain {
 		Button btnEliminaScaletta = new Button(win, SWT.PUSH);
 		btnEliminaScaletta.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				
+				if (listScalette.getSelectionCount() <= 0) return;
+				int[] selezione = listScalette.getSelectionIndices();
+				for (int i = selezione.length -1; i >= 0 ; i--) {
+					// dalla lista
+					listScalette.remove(selezione[i]);
+					// dal db
+					// TODO: magari unificare con una query unica, invece che mille query nel for
+					int id = scalette.get(selezione[i]).getId();
+					Database.queryUp("DELETE FROM scaletta WHERE id = ?", id+"");
+					Database.queryUp("DELETE FROM scaletta_canzone WHERE id_scaletta = ?", id+"");
+					
+					// dal vettore delle scalette
+					scalette.remove(selezione[i]);
+				}
 			}
 		});
 		Image imgElimina = new Image(display, "res/delete.png");
