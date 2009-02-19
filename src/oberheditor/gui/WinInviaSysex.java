@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.*;
 public class WinInviaSysex {
 	Shell win; // La finestra stessa
 	Scaletta scaletta;
+	private Spinner txtPatch;
 	
 	public WinInviaSysex(Shell parent, Scaletta _scaletta) {
 		this.scaletta = _scaletta;
@@ -39,6 +40,21 @@ public class WinInviaSysex {
 		
 		FormLayout layout = new FormLayout();
 		win.setLayout(layout);
+		
+		
+		// Patch
+		txtPatch = new Spinner(win, SWT.BORDER);
+		txtPatch.setMinimum(1);
+		txtPatch.setMaximum(128);
+		txtPatch.setSelection(1);
+		txtPatch.setIncrement(1);
+		txtPatch.setPageIncrement(10);
+		FormData layTxtPatch = new FormData();
+		layTxtPatch.left = new FormAttachment(0, 10);
+		layTxtPatch.top = new FormAttachment(0, 10);
+		txtPatch.setLayoutData(layTxtPatch);
+		
+		
 		
 		Button btnInvia = new Button(win, SWT.PUSH);
 		btnInvia.addSelectionListener(new SelectionAdapter() {
@@ -64,7 +80,7 @@ public class WinInviaSysex {
 
 	private void inviaScaletta(int posizione_chain) {
 		CreatoreMessaggi cm = new CreatoreMessaggi(scaletta);
-		Vector<SysexMessage> messaggi = cm.creaMessaggi();
+		Vector<SysexMessage> messaggi = cm.creaMessaggi(txtPatch.getSelection() - 1);
 		SysexTransmitter transmitter = new SysexTransmitter();
 		transmitter.invia(messaggi);
 	}

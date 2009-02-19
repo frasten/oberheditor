@@ -22,7 +22,7 @@ public class CreatoreMessaggi {
 				(byte) 0x02, (byte) 0x01 };
 	}
 
-	public Vector<SysexMessage> creaMessaggi() {
+	public Vector<SysexMessage> creaMessaggi(int id_chain) {
 		int contatore, puntatoreDati;
 		byte[] dati;
 
@@ -32,14 +32,10 @@ public class CreatoreMessaggi {
 		}
 		Vector<SysexMessage> result = new Vector<SysexMessage>();
 
-		/********** FIXME: TEEEEEEEEMPPPP ************/
-		int id_chain = 1;
 		String nomeChain = this.scaletta.getNome();
 		nomeChain = String.format("%1$-" + 12 + "s", nomeChain); // Pad right
 		nomeChain = nomeChain.substring(0, 12);
 
-		// pad left: String.format("%1$#" + n + "s", s);
-		/********** TEEEEEEEEMPPPP ************/
 
 		/****** HEADER *******/
 		boolean finito = false;
