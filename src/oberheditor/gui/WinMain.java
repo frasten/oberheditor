@@ -170,7 +170,7 @@ public class WinMain {
 				
 				
 				final Button ok = new Button(dialog, SWT.PUSH);
-				dialog.setDefaultButton(ok);
+				dialog.setDefaultButton(ok); // FIXME: non va
 				ok.setText("&OK");
 				ok.setImage(new Image(display, "res/delete.png"));
 				FormData okData = new FormData();

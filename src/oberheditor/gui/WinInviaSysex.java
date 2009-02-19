@@ -82,6 +82,10 @@ public class WinInviaSysex {
 		CreatoreMessaggi cm = new CreatoreMessaggi(scaletta);
 		Vector<SysexMessage> messaggi = cm.creaMessaggi(txtPatch.getSelection() - 1);
 		SysexTransmitter transmitter = new SysexTransmitter();
-		transmitter.invia(messaggi);
+		for (int i = 0; i < messaggi.size(); i++) {
+			// TODO: aggiornare la progressbar con percentuale (i+1)*100/messaggi.size()
+			if (!transmitter.invia(messaggi.get(i))) break;
+		}
+		transmitter.close();
 	}
 }
