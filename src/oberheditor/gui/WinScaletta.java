@@ -9,10 +9,7 @@ import oberheditor.Database;
 import oberheditor.Scaletta;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -94,14 +91,14 @@ public class WinScaletta {
 		layTxtNome.width = 250;
 		txtNome.setLayoutData(layTxtNome);
 		
-		txtNome.addFocusListener(new FocusListener() {
-			public void focusGained(FocusEvent e) {}
+		txtNome.addKeyListener(new KeyListener() {
+			@Override
+			public void keyPressed(KeyEvent e) {}
 
-			public void focusLost(FocusEvent e) {
+			@Override
+			public void keyReleased(KeyEvent e) {
 				scaletta.setNome(txtNome.getText());
-			}
-			
-		});
+			}});
 		
 		
 		Label lblData = new Label(win, SWT.NONE);
