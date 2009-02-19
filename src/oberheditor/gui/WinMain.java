@@ -22,6 +22,10 @@ public class WinMain {
 	ToolBar toolBar;
 	private Vector<Scaletta> scalette;
 	private Table listScalette;
+	private Button btnNuovaScaletta;
+	private Button btnModificaScaletta;
+	private Button btnInviaScaletta;
+	private Button btnEliminaScaletta;
 	
 	public WinMain(Display display) {
 		win = new Shell(display);
@@ -73,7 +77,7 @@ public class WinMain {
 		
 		listScalette.addListener (SWT.Selection, new Listener () {
 			public void handleEvent (Event e) {
-				// TODO: aggiornare i pulsanti
+				refreshTasti();
 			}
 		});
 		
@@ -91,7 +95,7 @@ public class WinMain {
 		/******************************************
 		 *      PULSANTI SCALETTE
 		 ******************************************/
-		Button btnNuovaScaletta = new Button(win, SWT.PUSH);
+		btnNuovaScaletta = new Button(win, SWT.PUSH);
 		btnNuovaScaletta.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				new WinScaletta(win);
@@ -106,7 +110,7 @@ public class WinMain {
 		layBtnNuovaScaletta.width = 150;
 		btnNuovaScaletta.setLayoutData(layBtnNuovaScaletta);
 		
-		Button btnModificaScaletta = new Button(win, SWT.PUSH);
+		btnModificaScaletta = new Button(win, SWT.PUSH);
 		btnModificaScaletta.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (listScalette.getSelectionCount() <= 0) return;
@@ -122,7 +126,7 @@ public class WinMain {
 		layBtnModificaScaletta.width = 150;
 		btnModificaScaletta.setLayoutData(layBtnModificaScaletta);
 		
-		Button btnInviaScaletta = new Button(win, SWT.PUSH);
+		btnInviaScaletta = new Button(win, SWT.PUSH);
 		btnInviaScaletta.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (listScalette.getSelectionCount() <= 0) return;
@@ -139,7 +143,7 @@ public class WinMain {
 		btnInviaScaletta.setLayoutData(layBtnInviaScaletta);
 		
 		
-		Button btnEliminaScaletta = new Button(win, SWT.PUSH);
+		btnEliminaScaletta = new Button(win, SWT.PUSH);
 		btnEliminaScaletta.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (listScalette.getSelectionCount() <= 0) return;
@@ -155,6 +159,7 @@ public class WinMain {
 					
 					// dal vettore delle scalette
 					scalette.remove(selezione[i]);
+					refreshTasti();
 				}
 			}
 		});
@@ -168,7 +173,7 @@ public class WinMain {
 		btnEliminaScaletta.setLayoutData(layBtnEliminaScaletta);
 		
 		caricaScalette();
-		
+		refreshTasti();
 		
 		
 		
@@ -199,9 +204,14 @@ public class WinMain {
 			if (!display.readAndDispatch()) display.sleep();
 		display.dispose();
 	}
+	
+	private void refreshTasti() {
+		btnModificaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
+		btnEliminaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
+		btnInviaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
+	}
 
 	private void caricaScalette() {
-		// TODO Auto-generated method stub
 		Database.creaTable(Database.TBL_CANZONE);
 		ResultSet res = Database.query("SELECT id FROM scaletta ORDER BY data DESC;");
 		scalette = new Vector<Scaletta>();
