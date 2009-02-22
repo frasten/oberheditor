@@ -83,6 +83,13 @@ public class WinMain {
 			}
 		});
 		
+		listScalette.addListener(SWT.MouseDoubleClick, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				modificaScalette();
+			}
+		});
+		
 		
 		FormData layListScalette = new FormData();
 		layListScalette.left = new FormAttachment(lblScalette, 0, SWT.LEFT);
@@ -117,10 +124,7 @@ public class WinMain {
 		btnModificaScaletta = new Button(win, SWT.PUSH);
 		btnModificaScaletta.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (listScalette.getSelectionCount() <= 0) return;
-				new WinScaletta(win, scalette.get(listScalette.getSelectionIndex()).getId());
-			// TODO: solo se ho confermato il salva
-				caricaScalette();
+				modificaScalette();
 			}
 		});
 		Image imgModifica = new Image(display, "res/edit.png");
@@ -257,6 +261,13 @@ public class WinMain {
 		display.dispose();
 	}
 	
+	private void modificaScalette() {
+		if (listScalette.getSelectionCount() <= 0) return;
+		new WinScaletta(win, scalette.get(listScalette.getSelectionIndex()).getId());
+		// TODO: solo se ho confermato il salva
+		caricaScalette();
+	}
+
 	private void refreshTasti() {
 		btnModificaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
 		btnEliminaScaletta.setEnabled(listScalette.getSelectionCount() > 0);

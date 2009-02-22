@@ -30,6 +30,7 @@ public class WinScaletta {
 	private Scaletta scaletta;
 	private Vector<Canzone> canzoniDisponibili;
 	private DateTime data;
+	private Label statusBar;
 	
 	
 	public WinScaletta(Shell _parent, int ... id_scaletta) {
@@ -76,6 +77,19 @@ public class WinScaletta {
 		toolBar.setLayoutData(layToolBar);
 
 
+		
+		statusBar = new Label(win, SWT.BORDER);
+		statusBar.setText("prova");
+		FormData layStatusBar = new FormData();
+		layStatusBar.bottom = new FormAttachment(100, 2);
+		layStatusBar.left = new FormAttachment(0, -2);
+		layStatusBar.right = new FormAttachment(100, 2);
+		statusBar.setLayoutData(layStatusBar);
+		
+		
+		
+		
+		
 		
 		Label lblNome = new Label(win, SWT.NONE);
 		lblNome.setText("Nome:");
@@ -137,7 +151,7 @@ public class WinScaletta {
 		btnSalva.setText("Salva");
 		FormData layBtnSalva = new FormData();
 		layBtnSalva.right = new FormAttachment(100, -10);
-		layBtnSalva.bottom = new FormAttachment(100, -10);
+		layBtnSalva.bottom = new FormAttachment(statusBar, -10, SWT.TOP);
 		btnSalva.setLayoutData(layBtnSalva);
 		
 		Button btnAnnulla = new Button(win, SWT.PUSH);
@@ -292,8 +306,6 @@ public class WinScaletta {
 		
 		
 		
-		
-		
 		caricaCanzoniDisponibili();
 		if (id_scaletta.length > 0) {
 			this.idScaletta = id_scaletta[0];
@@ -302,6 +314,8 @@ public class WinScaletta {
 		else {
 			scaletta = new Scaletta();
 		}
+		
+		
 		
 		refreshControlli();
 		
