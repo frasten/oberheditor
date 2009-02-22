@@ -101,6 +101,8 @@ public class WinMain {
 		btnNuovaScaletta.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				new WinScaletta(win);
+				// TODO: solo se ho confermato il salva
+				caricaScalette();
 			}
 		});
 		Image imgNuovo = new Image(display, "res/add.png");
@@ -117,6 +119,8 @@ public class WinMain {
 			public void widgetSelected(SelectionEvent e) {
 				if (listScalette.getSelectionCount() <= 0) return;
 				new WinScaletta(win, scalette.get(listScalette.getSelectionIndex()).getId());
+			// TODO: solo se ho confermato il salva
+				caricaScalette();
 			}
 		});
 		Image imgModifica = new Image(display, "res/edit.png");
@@ -222,7 +226,6 @@ public class WinMain {
 		btnEliminaScaletta.setLayoutData(layBtnEliminaScaletta);
 		
 		caricaScalette();
-		refreshTasti();
 		
 		
 		
@@ -264,6 +267,7 @@ public class WinMain {
 		Database.creaTable(Database.TBL_CANZONE);
 		ResultSet res = Database.query("SELECT id FROM scaletta ORDER BY data DESC;");
 		scalette = new Vector<Scaletta>();
+		listScalette.removeAll();
 		
 		try {
 			Vector<Integer> id_scalette = new Vector<Integer>();
@@ -284,6 +288,6 @@ public class WinMain {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		refreshTasti();
 	}
 }

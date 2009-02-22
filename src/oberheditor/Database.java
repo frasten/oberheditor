@@ -108,7 +108,7 @@ public class Database {
 		Canzone elvenpath = new Canzone("Elvenpath");
 		elvenpath.setPatches(new String[] {"A-058", "A-059", "A-060", "A-061", "A-062"});
 		Canzone fantasmic = new Canzone("Fantasmic");
-		fantasmic.setPatches(new String[] {"A-063", "A-064"});
+		fantasmic.setPatches(new String[] {"A-063", "A-064", "A-063", "A-064"});
 		Canzone everdream = new Canzone("Ever Dream");
 		everdream.setPatches(new String[] {"A-047", "A-048", "A-049", "A-050", "A-051", "A-052", "A-053", "A-054"});
 		Canzone moondance = new Canzone("Moondance");

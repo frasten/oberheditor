@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.*;
 
 public class WinScaletta {
 	private int idScaletta;
-	private Shell win; // La finestra stessa
+	private Shell win, parent; // La finestra stessa
 	private List listCanzoniDisponibili;
 	private List listCanzoniScaletta;
 	private Button btnAdd, btnMuoviSu, btnMuoviGiu, btnElimina;
@@ -32,11 +32,11 @@ public class WinScaletta {
 	private DateTime data;
 	
 	
-	public WinScaletta(Shell parent, int ... id_scaletta) {
+	public WinScaletta(Shell _parent, int ... id_scaletta) {
+		this.parent = _parent;
 		win = new Shell(parent, SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		win.setText("Scaletta");
 		Display display = parent.getDisplay();
-		
 		
 		int win_w = 700;
 		int win_h = 500;
