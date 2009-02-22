@@ -58,8 +58,7 @@ public class WinScaletta {
 		item.addListener (SWT.Selection, new Listener () {
 			public void handleEvent (Event e) {
 				scaletta.resetId();
-				scaletta.salvaDB();
-				win.close();
+				salvaScalettaEdEsci();
 			}
 		});
 		item.setText ("Salva come nuovo"); // \tCtrl+A
@@ -130,8 +129,7 @@ public class WinScaletta {
 		Button btnSalva = new Button(win, SWT.PUSH);
 		btnSalva.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				scaletta.salvaDB();
-				win.close();
+				salvaScalettaEdEsci();
 			}
 		});
 		Image imgSalva = new Image(display, "res/save.png");
@@ -172,7 +170,7 @@ public class WinScaletta {
 		
 		listCanzoniScaletta.addListener (SWT.Selection, new Listener () {
 			public void handleEvent (Event e) {
-				refreshTasti();
+				refreshControlli();
 			}
 		});
 		
@@ -205,7 +203,7 @@ public class WinScaletta {
 					scaletta.addCanzone(song, startSelezione + 1 + i);
 				}
 				listCanzoniScaletta.setSelection(startSelezione + 1, startSelezione + listCanzoniDisponibili.getSelection().length);
-				refreshTasti();
+				refreshControlli();
 			}
 		});
 		
@@ -230,7 +228,7 @@ public class WinScaletta {
 					listCanzoniScaletta.remove(idSelezionati[i] -1);
 					scaletta.rimuoviCanzone(idSelezionati[i] - 1);
 				}
-				refreshTasti();
+				refreshControlli();
 			}
 		});
 		Image imgSu = new Image(display, "res/up.png");
@@ -259,7 +257,7 @@ public class WinScaletta {
 					listCanzoniScaletta.remove(idSelezionati[i] + 2);
 					scaletta.rimuoviCanzone(idSelezionati[i] + 2);
 				}
-				refreshTasti();
+				refreshControlli();
 			}
 		});
 		Image imgGiu = new Image(display, "res/down.png");
@@ -287,7 +285,7 @@ public class WinScaletta {
 					scaletta.rimuoviCanzone(selezione[i]);
 					listCanzoniScaletta.remove(selezione[i]);
 				}
-				refreshTasti();
+				refreshControlli();
 			}
 		});
 		
@@ -305,7 +303,7 @@ public class WinScaletta {
 			scaletta = new Scaletta();
 		}
 		
-		refreshTasti();
+		refreshControlli();
 		
 		/*
 		DateTime calendario = new DateTime (win, SWT.CALENDAR | SWT.BORDER);
@@ -327,7 +325,19 @@ public class WinScaletta {
 		}
 	}
 
-	protected void refreshTasti() {
+	protected void salvaScalettaEdEsci() {
+		// Controlliamo che la scaletta non contenga piu' di 256 patches
+		int numPatches = scaletta.getNumeroPatches();
+		if (numPatches > 256) {
+			System.out.println("troppe patches: "+ numPatches);
+			return;
+		}
+		
+		if (scaletta.salvaDB())
+			win.close();
+	}
+
+	protected void refreshControlli() {
 		if (listCanzoniScaletta.getSelectionCount() <= 0) {
 			btnMuoviSu.setEnabled(false);
 			btnMuoviGiu.setEnabled(false);

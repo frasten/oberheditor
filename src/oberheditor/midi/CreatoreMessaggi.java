@@ -112,6 +112,9 @@ public class CreatoreMessaggi {
 
 		// Prendo i dati veri e propri
 		dati = scaletta.toByteArray();
+		if (dati.length > 512) {
+			throw new IllegalArgumentException("Questa chain contiene piu` di 256 patches!");
+		}
 		puntatoreDati = 0;
 
 		while (!finito) {

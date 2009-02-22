@@ -112,6 +112,9 @@ public class Scaletta {
 		int contatore = 0;
 		for (Canzone song : this.canzoni) {
 			for (String patch : song.getPatches()) {
+				if (contatore >= 512) {
+					throw new IllegalArgumentException("Questa chain contiene piu` di 256 patches!");
+				}
 				// Banco
 				result[contatore++] = (byte) ((int) patch.charAt(0) - (int) 'A' + 0x41);
 				// Patch
@@ -127,6 +130,14 @@ public class Scaletta {
 
 	public String getNome() {
 		return nome;
+	}
+	
+	public int getNumeroPatches() {
+		int result = 0;
+		for (Canzone song : this.canzoni) {
+			result += song.getPatches().size();
+		}
+		return result;
 	}
 	
 	
