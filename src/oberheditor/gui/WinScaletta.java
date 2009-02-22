@@ -19,16 +19,16 @@ import org.eclipse.swt.widgets.*;
 
 
 public class WinScaletta {
-	private int id_scaletta;
-	Shell win; // La finestra stessa
-	List listCanzoniDisponibili;
-	List listCanzoniScaletta;
-	Button btnAdd, btnMuoviSu, btnMuoviGiu, btnElimina;
-	Text txtNome;
+	private int idScaletta;
+	private Shell win; // La finestra stessa
+	private List listCanzoniDisponibili;
+	private List listCanzoniScaletta;
+	private Button btnAdd, btnMuoviSu, btnMuoviGiu, btnElimina;
+	private Text txtNome;
 	
-	ToolBar toolBar;
-	Scaletta scaletta;
-	Vector<Canzone> canzoni_disponibili;
+	private ToolBar toolBar;
+	private Scaletta scaletta;
+	private Vector<Canzone> canzoniDisponibili;
 	private DateTime data;
 	
 	
@@ -200,7 +200,7 @@ public class WinScaletta {
 			public void widgetSelected(SelectionEvent e) {
 				int startSelezione = listCanzoniScaletta.getSelectionIndex();
 				for (int i = 0; i < listCanzoniDisponibili.getSelection().length; i++) {
-					Canzone song = canzoni_disponibili.get(listCanzoniDisponibili.getSelectionIndices()[i]);
+					Canzone song = canzoniDisponibili.get(listCanzoniDisponibili.getSelectionIndices()[i]);
 					listCanzoniScaletta.add(song.getNome(), startSelezione + 1 + i);
 					scaletta.addCanzone(song, startSelezione + 1 + i);
 				}
@@ -298,8 +298,8 @@ public class WinScaletta {
 		
 		caricaCanzoniDisponibili();
 		if (id_scaletta.length > 0) {
-			this.id_scaletta = id_scaletta[0];
-			caricaScalettaDatabase(this.id_scaletta);
+			this.idScaletta = id_scaletta[0];
+			caricaScalettaDatabase(this.idScaletta);
 		}
 		else {
 			scaletta = new Scaletta();
@@ -348,7 +348,7 @@ public class WinScaletta {
 	private void caricaCanzoniDisponibili() {
 		Database.creaTable(Database.TBL_CANZONE);
 		ResultSet res = Database.query("SELECT id FROM canzone ORDER BY nome ASC;");
-		canzoni_disponibili = new Vector<Canzone>();
+		canzoniDisponibili = new Vector<Canzone>();
 		
 		try {
 			Vector<Integer> canzoni = new Vector<Integer>();
@@ -361,7 +361,7 @@ public class WinScaletta {
 			res.getStatement().close();
 			for (Integer id : canzoni) {
 				Canzone song = new Canzone(id);
-				canzoni_disponibili.add(song);
+				canzoniDisponibili.add(song);
 				listCanzoniDisponibili.add(song.getNome());
 			}
 			

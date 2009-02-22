@@ -23,8 +23,8 @@ import java.util.Vector;
 import java.io.*;
 
 public class MidiReader {
-	static Vector<MidiDevice> porte_in, porte_out;
-	static Vector<SysexMessage> messaggi;
+	private static Vector<MidiDevice> porte_in, porte_out;
+	private static Vector<SysexMessage> messaggi;
 	public static final boolean DEBUG = true; 
 
 	public static void main(String args[]) {
@@ -88,7 +88,7 @@ public class MidiReader {
 		// Leggo i dati dalla prima porta, per esempio
 		SysexReceiver rcvr = new SysexReceiver();
 		MidiDevice porta_in = porte_in.get(0);
-		messaggi = new Vector<SysexMessage>();
+		setMessaggi(new Vector<SysexMessage>());
 		if (!(porta_in.isOpen())) {
 		  try {
 		  	porta_in.open();
@@ -116,17 +116,17 @@ public class MidiReader {
 	}
 	
 	private static void resoconto() {
-		log("Salvati " + messaggi.size() + " messaggi SysEx.");
+		log("Salvati " + getMessaggi().size() + " messaggi SysEx.");
 		int nBytes = 0;
-		for (SysexMessage msg : messaggi) {
+		for (SysexMessage msg : getMessaggi()) {
 			nBytes += msg.getMessage().length;
 		}
 		log("Ricevuti " + nBytes + " bytes totali.");
 	}
 
 	private static void salvaSyx() {
-		if (messaggi == null) return;
-		if (messaggi.size() <= 0) {
+		if (getMessaggi() == null) return;
+		if (getMessaggi().size() <= 0) {
 			log("Nessun messaggio ricevuto da salvare.");
 			return;
 		}
@@ -140,7 +140,7 @@ public class MidiReader {
       dos=new DataOutputStream(fos);
 
       // Salvo tutti i messaggi
-			for (SysexMessage msg : messaggi) {
+			for (SysexMessage msg : getMessaggi()) {
 				dos.write(msg.getMessage());
 			}
 			dos.close();
@@ -155,5 +155,13 @@ public class MidiReader {
 		if (DEBUG) {
 			System.out.println(msg);
 		}
+	}
+
+	public static void setMessaggi(Vector<SysexMessage> messaggi) {
+		MidiReader.messaggi = messaggi;
+	}
+
+	public static Vector<SysexMessage> getMessaggi() {
+		return messaggi;
 	}
 }

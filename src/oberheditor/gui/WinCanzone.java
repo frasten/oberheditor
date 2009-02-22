@@ -11,11 +11,11 @@ import org.eclipse.swt.*;
 
 
 public class WinCanzone {
-	Shell win; // La finestra stessa
-	List listPatches;
-	Spinner txtPatch;
-	Combo cmbBanco;
-	Text txtNome;
+	private Shell win; // La finestra stessa
+	private List listPatches;
+	private Spinner txtPatch;
+	private Combo cmbBanco;
+	private Text txtNome;
 	
 	
 	/* costruttore */

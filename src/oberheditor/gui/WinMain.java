@@ -19,15 +19,14 @@ import org.eclipse.swt.widgets.*;
 
 
 public class WinMain {
-	Shell win;
-	ToolBar toolBar;
+	private Shell win;
 	private Vector<Scaletta> scalette;
 	private Table listScalette;
 	private Button btnNuovaScaletta;
 	private Button btnModificaScaletta;
 	private Button btnInviaScaletta;
 	private Button btnEliminaScaletta;
-	Display display;
+	private Display display;
 	
 	public WinMain(Display _display) {
 		this.display = _display;

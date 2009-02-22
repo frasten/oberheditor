@@ -19,8 +19,8 @@ import org.eclipse.swt.widgets.*;
 
 
 public class WinInviaSysex {
-	Shell win; // La finestra stessa
-	Scaletta scaletta;
+	private Shell win; // La finestra stessa
+	private Scaletta scaletta;
 	private Spinner txtChain;
 	private ProgressBar progress;
 	

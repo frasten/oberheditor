@@ -17,11 +17,11 @@ public class SysexReceiver implements Receiver {
 		
 		byte[] bytes = message.getMessage();
 		System.out.println(getHexString(bytes));
-		MidiReader.messaggi.add((SysexMessage) message);
+		MidiReader.getMessaggi().add((SysexMessage) message);
 	}
 	
 	
-	public static char hexDigits[] = 
+	private static char hexDigits[] = 
   {'0', '1', '2', '3', 
    '4', '5', '6', '7', 
    '8', '9', 'A', 'B', 

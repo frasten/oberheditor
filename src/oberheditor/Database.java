@@ -6,8 +6,7 @@ public class Database {
 	public final static int TBL_CANZONE = 1;
 	public final static int TBL_SCALETTA = 2;
 	public final static int TBL_SCALETTA_CANZONE = 4;
-	final static String NOME_DB = "oberheim.db";
-	
+	private final static String NOME_DB = "oberheim.db";
 	
 	private static Connection conn;
 	
