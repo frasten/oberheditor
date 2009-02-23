@@ -250,17 +250,16 @@ public class CreatoreMessaggi {
 			result.add(sysex);
 		}
 
-		salvaSyx(result);
 		return result;
 	}
 
-	private void salvaSyx(Vector<SysexMessage> messaggi) {
+	public void salvaSyx(Vector<SysexMessage> messaggi, String path) {
 		// Salvataggio
 		FileOutputStream fos;
 		DataOutputStream dos;
 
 		try {
-			File file = new File("scaletta.syx");
+			File file = new File(path);
 			fos = new FileOutputStream(file);
 			dos = new DataOutputStream(fos);
 

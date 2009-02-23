@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import oberheditor.Database;
 import oberheditor.Scaletta;
+import oberheditor.midi.CreatoreMessaggi;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -27,6 +28,7 @@ public class WinMain {
 	private Button btnInviaScaletta;
 	private Button btnEliminaScaletta;
 	private Display display;
+	private MenuItem mnuEsportaSyx;
 	
 	public WinMain(Display _display) {
 		this.display = _display;
@@ -49,13 +51,29 @@ public class WinMain {
 		fileItem.setText ("&File");
 		Menu submenu = new Menu (win, SWT.DROP_DOWN);
 		fileItem.setMenu (submenu);
-		MenuItem item = new MenuItem (submenu, SWT.PUSH);
-		item.addListener (SWT.Selection, new Listener () {
+		mnuEsportaSyx = new MenuItem (submenu, SWT.PUSH);
+		mnuEsportaSyx.addListener (SWT.Selection, new Listener () {
 			public void handleEvent (Event e) {
+				// se non ho alcuna scaletta selezionata, esco
+				if (listScalette.getSelectionCount() <= 0) return;
+				// TODO: implementare il salvataggio di piu' scalette insieme
+				
+				// Mostro la finestra di dialogo per il salvataggio
+				FileDialog dialog = new FileDialog (win, SWT.SAVE);
+				dialog.setFilterNames (new String [] {"File SysEx", "Tutti i files(*.*)"});
+				dialog.setFilterExtensions (new String [] {"*.syx", "*.*"}); //Windows wild cards
+				dialog.setFileName(listScalette.getSelection()[0].getText(0).toLowerCase() + ".syx");
+				String path = dialog.open();
+				if (path == null) return;
+				CreatoreMessaggi cm = new CreatoreMessaggi(scalette.get(listScalette.getSelectionIndex()));
+				// TODO: far scegliere in quale posizione la voglio salvare
+				cm.salvaSyx(cm.creaMessaggi(0), path);
+				// TODO: mostrare errore se c'e' un problema nel salvataggio
 			}
 		});
-		item.setText ("Boh"); // \tCtrl+A
-		//item.setAccelerator (SWT.MOD1 + 'A');
+		mnuEsportaSyx.setText("Esporta come file .syx\tCtrl+S");
+		mnuEsportaSyx.setAccelerator (SWT.MOD1 + 'S');
+
 		
 		Label lblScalette = new Label(win, SWT.NONE);
 		lblScalette.setText("Scalette:");
@@ -272,6 +290,7 @@ public class WinMain {
 		btnModificaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
 		btnEliminaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
 		btnInviaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
+		mnuEsportaSyx.setEnabled(listScalette.getSelectionCount() > 0);
 	}
 
 	private void caricaScalette() {
