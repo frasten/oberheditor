@@ -276,7 +276,7 @@ public class WinMain {
 
 	private void caricaScalette() {
 		Database.creaTable(Database.TBL_CANZONE);
-		ResultSet res = Database.query("SELECT id FROM scaletta ORDER BY data DESC;");
+		ResultSet res = Database.query("SELECT id FROM scaletta ORDER BY data DESC, id DESC;");
 		scalette = new Vector<Scaletta>();
 		listScalette.removeAll();
 		
