@@ -2,6 +2,7 @@ package oberheditor.gui;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
@@ -24,12 +25,12 @@ public class WinScaletta {
 	private List listCanzoniDisponibili;
 	private List listCanzoniScaletta;
 	private Button btnAdd, btnMuoviSu, btnMuoviGiu, btnElimina;
-	private Text txtNome;
+	private Text txtNome, data;
 	
 	private ToolBar toolBar;
 	private Scaletta scaletta;
 	private Vector<Canzone> canzoniDisponibili;
-	private DateTime data;
+	private DateTime calendario;
 	private Label statusBar;
 	
 	
@@ -123,20 +124,60 @@ public class WinScaletta {
 		layLblData.top = new FormAttachment(lblNome, 0, SWT.TOP);
 		lblData.setLayoutData(layLblData);
 		
-		data = new DateTime (win, SWT.DATE | SWT.BORDER);
+		/****************************************************
+		 *                  DATA
+		 ****************************************************/
+		calendario = new DateTime (win, SWT.CALENDAR | SWT.BORDER);
+		calendario.setVisible(false);
+		calendario.addListener(SWT.Selection, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				/* TODO: trovare un metodo per non far chiudere il calendario
+				 * su cambio di mese
+				 */
+				scaletta.setData(new GregorianCalendar(calendario.getYear(),
+      			calendario.getMonth(), calendario.getDay()));
+				SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+				data.setText(format.format(scaletta.getData().getTime()));
+				calendario.setVisible(false);
+			}
+		});
+		
+		calendario.addListener(SWT.FocusOut, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				calendario.setVisible(false);				
+			}
+		});
+		
+		
+		data = new Text(win, SWT.BORDER);
+		data.setEditable(false);
+		// Mostro il calendario, su click
+		data.addListener(SWT.FocusIn, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				calendario.setVisible(true);
+				calendario.forceFocus();
+			}
+		});
+		
 		FormData layData = new FormData();
 		layData.left = new FormAttachment(lblData, 10, SWT.RIGHT);
 		layData.top = new FormAttachment(txtNome, 0, SWT.TOP);
+		layData.width = 80;
 		data.setLayoutData(layData);
 		
-		data.addSelectionListener (new SelectionAdapter () {
-	    public void widgetSelected (SelectionEvent e) {
-	    	data.getYear();
-      	scaletta.setData(new GregorianCalendar(data.getYear(),
-      			data.getMonth(), data.getDay()));
-	    }
-	  });
 		
+		
+		FormData layCalendario = new FormData();
+		layCalendario.left = new FormAttachment(data, 0, SWT.LEFT);
+		layCalendario.top = new FormAttachment(data, 2, SWT.BOTTOM);
+		calendario.setLayoutData(layCalendario);
+		
+		
+		
+				
 		/**************************************************
 		 *             PULSANTI FINALI
 		 *************************************************/
@@ -319,19 +360,6 @@ public class WinScaletta {
 		
 		refreshControlli();
 		
-		/*
-		DateTime calendario = new DateTime (win, SWT.CALENDAR | SWT.BORDER);
-		calendario.pack();
-		calendario.setLocation(450, 43);
-		*/
-		//listCanzoniScaletta
-		
-		/*
-		Group grpCanzoni = new Group(win, SWT.NONE);
-		grpCanzoni.pack();
-		grpCanzoni.setLocation(10, 65);
-		*/
-		
 		
 		win.open();
 		while (!win.isDisposed()) {
@@ -401,10 +429,14 @@ public class WinScaletta {
 		scaletta = new Scaletta(id);
 		txtNome.setText(scaletta.getNome());
 		
-		data.setDate(scaletta.getData().get(GregorianCalendar.YEAR),
+		// Imposto la data
+		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+		data.setText(format.format(scaletta.getData().getTime()));
+		calendario.setDate(scaletta.getData().get(GregorianCalendar.YEAR),
 				scaletta.getData().get(GregorianCalendar.MONTH),
 				scaletta.getData().get(GregorianCalendar.DATE)
 		);
+
 		for (Canzone song : scaletta.getCanzoni()) {
 			listCanzoniScaletta.add(song.getNome());
 		}
