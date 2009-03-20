@@ -3,6 +3,7 @@ package oberheditor.gui;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
@@ -136,11 +137,20 @@ public class WinScaletta {
 				/* TODO: trovare un metodo per non far chiudere il calendario
 				 * su cambio di mese
 				 */
-				scaletta.setData(new GregorianCalendar(calendario.getYear(),
-      			calendario.getMonth(), calendario.getDay()));
+				boolean chiudi = true;
+				GregorianCalendar newData = new GregorianCalendar(calendario.getYear(),
+      			calendario.getMonth(), calendario.getDay()); 
+				// Evito la chiusura del calendario se sto solo cambiando mese o anno
+				if (scaletta.getData() != null &&
+						(scaletta.getData().get(Calendar.MONTH) != calendario.getMonth() ||
+							scaletta.getData().get(Calendar.YEAR) != calendario.getYear()))
+					chiudi = false;
+				
+				scaletta.setData(newData);
 				SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
 				data.setText(format.format(scaletta.getData().getTime()));
-				calendario.setVisible(false);
+				
+				calendario.setVisible(!chiudi);
 			}
 		});
 		
