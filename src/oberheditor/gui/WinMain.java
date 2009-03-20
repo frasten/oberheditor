@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
 
+import oberheditor.Canzone;
 import oberheditor.Database;
 import oberheditor.Scaletta;
 import oberheditor.midi.CreatoreMessaggi;
@@ -29,6 +30,11 @@ public class WinMain {
 	private Button btnEliminaScaletta;
 	private Display display;
 	private MenuItem mnuEsportaSyx;
+	private Vector<Canzone> canzoni;
+	private List listCanzoni;
+	private Button btnNuovaCanzone;
+	private Button btnModificaCanzone;
+	private Button btnEliminaCanzone;
 	
 	public WinMain(Display _display) {
 		this.display = _display;
@@ -97,7 +103,7 @@ public class WinMain {
 		
 		listScalette.addListener (SWT.Selection, new Listener () {
 			public void handleEvent (Event e) {
-				refreshTasti();
+				refreshTastiScaletta();
 			}
 		});
 		
@@ -234,7 +240,7 @@ public class WinMain {
 					
 					// dal vettore delle scalette
 					scalette.remove(selezione[i]);
-					refreshTasti();
+					refreshTastiScaletta();
 				}
 			}
 		});
@@ -256,7 +262,7 @@ public class WinMain {
 		 **********************************************************/
 		
 		
-		List listCanzoni = new List(win, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+		listCanzoni = new List(win, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
 		FormData layListCanzoni = new FormData();
 		layListCanzoni.left = new FormAttachment(50, 0);
 		layListCanzoni.top = new FormAttachment(listScalette, 0, SWT.TOP);
@@ -264,14 +270,139 @@ public class WinMain {
 		layListCanzoni.bottom = new FormAttachment(listScalette, 0, SWT.BOTTOM);
 		listCanzoni.setLayoutData(layListCanzoni);
 		
-		
-		listCanzoni.addListener (SWT.Selection, new Listener () {
-			public void handleEvent (Event e) {
-				
+		listCanzoni.addListener(SWT.MouseDoubleClick, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				modificaCanzoni();
 			}
 		});
 		
+		listCanzoni.addListener (SWT.Selection, new Listener () {
+			public void handleEvent (Event e) {
+				// Su cambio di selezione, aggiorno lo stato abilitato dei pulsanti 
+				refreshTastiCanzone();
+			}
+		});
 		
+		Label lblCanzoni = new Label(win, SWT.NONE);
+		lblCanzoni.setText("Canzoni:");
+		FormData layLblCanzoni = new FormData();
+		layLblCanzoni.left = new FormAttachment(listCanzoni, 0, SWT.LEFT);
+		layLblCanzoni.top = new FormAttachment(lblScalette, 0, SWT.TOP);
+		lblCanzoni.setLayoutData(layLblCanzoni);
+		
+		
+		
+		btnNuovaCanzone = new Button(win, SWT.PUSH);
+		btnNuovaCanzone.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				new WinCanzone(win);
+				// TODO: solo se ho confermato il salva
+				caricaCanzoni();
+			}
+		});
+		btnNuovaCanzone.setImage(imgNuovo);
+		btnNuovaCanzone.setText("Nuova Canzone");
+		FormData layBtnNuovaCanzone = new FormData();
+		layBtnNuovaCanzone.left = new FormAttachment(listCanzoni, 10, SWT.RIGHT);
+		layBtnNuovaCanzone.top = new FormAttachment(listCanzoni, 20, SWT.TOP);
+		layBtnNuovaCanzone.width = 150;
+		btnNuovaCanzone.setLayoutData(layBtnNuovaCanzone);
+		
+		btnModificaCanzone = new Button(win, SWT.PUSH);
+		btnModificaCanzone.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				modificaCanzoni();
+			}
+		});
+		btnModificaCanzone.setImage(imgModifica);
+		btnModificaCanzone.setText("Modifica Canzone");
+		FormData layBtnModificaCanzone = new FormData();
+		layBtnModificaCanzone.left = new FormAttachment(btnNuovaCanzone, 0, SWT.LEFT);
+		layBtnModificaCanzone.top = new FormAttachment(btnNuovaCanzone, 10, SWT.BOTTOM);
+		layBtnModificaCanzone.width = 150;
+		btnModificaCanzone.setLayoutData(layBtnModificaCanzone);
+		
+		btnEliminaCanzone = new Button(win, SWT.PUSH);
+		btnEliminaCanzone.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (listCanzoni.getSelectionCount() <= 0) return;
+				// Chiedo conferma con un dialogo
+				final boolean [] conferma = new boolean [1];
+				final Shell dialog = new Shell (win, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+				FormLayout form = new FormLayout ();
+				form.marginWidth = form.marginHeight = 8;
+				dialog.setLayout (form);
+
+				Label label = new Label (dialog, SWT.NONE);
+				label.setText ("Vuoi davvero eliminare la canzone selezionata?\nSara` eliminata da tutte le scalette.");
+				
+				Button cancel = new Button (dialog, SWT.PUSH);
+				cancel.setText("&Annulla");
+				cancel.setImage(new Image(display, "res/cancel.png"));
+				FormData cancelData = new FormData ();
+				cancelData.top = new FormAttachment(label, 8);
+				cancelData.right = new FormAttachment(50, -5);
+				cancel.setLayoutData(cancelData);
+				
+				
+				final Button ok = new Button(dialog, SWT.PUSH);
+				dialog.setDefaultButton(ok); // FIXME: non va
+				ok.setText("&OK");
+				ok.setImage(new Image(display, "res/delete.png"));
+				FormData okData = new FormData();
+				okData.left = new FormAttachment(50, 5);
+				okData.top = new FormAttachment(cancel, 0, SWT.TOP);
+				ok.setLayoutData(okData);
+
+				Listener listener = new Listener() {
+					public void handleEvent (Event event) {
+						conferma [0] = event.widget == ok;
+						dialog.close();
+					}
+				};
+				
+				ok.addListener (SWT.Selection, listener);
+				cancel.addListener (SWT.Selection, listener);
+				
+				
+				dialog.pack ();
+				dialog.open ();
+				while (!dialog.isDisposed ()) {
+					if (!display.readAndDispatch ()) display.sleep ();
+				}
+
+				if (!conferma[0]) return;
+				
+				int[] selezione = listCanzoni.getSelectionIndices();
+				for (int i = selezione.length -1; i >= 0 ; i--) {
+					// dalla lista
+					listCanzoni.remove(selezione[i]);
+					// dal db
+					// TODO: magari unificare con una query unica, invece che mille query nel for
+					int id = canzoni.get(selezione[i]).getId();
+					Database.queryUp("DELETE FROM canzone WHERE id = ?", id+"");
+					Database.queryUp("DELETE FROM scaletta_canzone WHERE id_canzone = ?", id+"");
+					
+					// dal vettore delle scalette
+					canzoni.remove(selezione[i]);
+					refreshTastiCanzone();
+				}
+			}
+		});
+		btnEliminaCanzone.setImage(imgElimina);
+		btnEliminaCanzone.setText("Elimina Canzone");
+		FormData layBtnEliminaCanzone = new FormData();
+		layBtnEliminaCanzone.left = new FormAttachment(btnNuovaCanzone, 0, SWT.LEFT);
+		layBtnEliminaCanzone.top = new FormAttachment(btnModificaCanzone, 10, SWT.BOTTOM);
+		layBtnEliminaCanzone.width = 150;
+		btnEliminaCanzone.setLayoutData(layBtnEliminaCanzone);
+		
+		
+//		(14:18:50) Dery: ed oggi quel ragazzo che mi piaceva ha detto che mi so fatta chiù beell
+//		(14:19:04) Dery: e ij agg ritt beell ro mij ma va aiz a merd e accirt!XD
+//		(14:19:18) Frasten: orcozio, non ho capito una sega
+		caricaCanzoni();
 		
 		win.open();
 		while (!win.isDisposed())
@@ -285,16 +416,28 @@ public class WinMain {
 		// TODO: solo se ho confermato il salva
 		caricaScalette();
 	}
+	
+	private void modificaCanzoni() {
+		if (listCanzoni.getSelectionCount() <= 0) return;
+		new WinCanzone(win, canzoni.get(listCanzoni.getSelectionIndex()).getId());
+		// TODO: solo se ho confermato il salva
+		caricaCanzoni();
+	}
 
-	private void refreshTasti() {
+	private void refreshTastiScaletta() {
 		btnModificaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
 		btnEliminaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
 		btnInviaScaletta.setEnabled(listScalette.getSelectionCount() > 0);
 		mnuEsportaSyx.setEnabled(listScalette.getSelectionCount() > 0);
 	}
+	
+	private void refreshTastiCanzone() {
+		btnModificaCanzone.setEnabled(listCanzoni.getSelectionCount() > 0);
+		btnEliminaCanzone.setEnabled(listCanzoni.getSelectionCount() > 0);
+	}
 
 	private void caricaScalette() {
-		Database.creaTable(Database.TBL_CANZONE);
+		Database.creaTable(Database.TBL_SCALETTA);
 		ResultSet res = Database.query("SELECT id FROM scaletta ORDER BY data DESC, id DESC;");
 		scalette = new Vector<Scaletta>();
 		listScalette.removeAll();
@@ -318,6 +461,32 @@ public class WinMain {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		refreshTasti();
+		refreshTastiScaletta();
+	}
+	
+	private void caricaCanzoni() {
+		Database.creaTable(Database.TBL_CANZONE);
+		ResultSet res = Database.query("SELECT id FROM canzone ORDER BY nome ASC;");
+		canzoni = new Vector<Canzone>();
+		listCanzoni.removeAll();
+		
+		try {
+			Vector<Integer> id_canzoni = new Vector<Integer>();
+			while (res.next()) {
+				// Le carico in memoria
+				id_canzoni.add(res.getInt("id"));
+			}
+			res.close();
+			res.getStatement().close();
+			for (Integer id : id_canzoni) {
+				Canzone song = new Canzone(id);
+				canzoni.add(song);
+				listCanzoni.add(song.getNome());
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		refreshTastiCanzone();
 	}
 }

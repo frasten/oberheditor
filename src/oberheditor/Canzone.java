@@ -27,7 +27,7 @@ public class Canzone {
 	 * Crea una canzone con lista patch vuota.
 	 */
 	public Canzone() {
-		
+		patches = new Vector<String>();
 	}
 	
 	/**
@@ -121,6 +121,11 @@ public class Canzone {
 	public boolean salvaDB() {
 		Database.creaTable(Database.TBL_CANZONE);
 		
+		if (patches.size() > 256) {
+			System.out.println("Troppe patches: "+ patches.size());
+			return false;
+		}
+		
     // Creiamo la lista di patches
     StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < this.patches.size(); i++) {
@@ -142,7 +147,7 @@ public class Canzone {
   		setId(id);
     }
 				
-		return false; // TODO: ritornare qualcosa
+		return true; // TODO: ritornare qualcosa
 	}
 
 	/**

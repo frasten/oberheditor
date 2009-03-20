@@ -1,6 +1,6 @@
 package oberheditor.gui;
 
-import oberheditor.Database;
+import oberheditor.Canzone;
 
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
@@ -11,16 +11,20 @@ import org.eclipse.swt.*;
 
 
 public class WinCanzone {
-	private Shell win; // La finestra stessa
+	private Shell win, parent; // La finestra stessa
 	private List listPatches;
 	private Spinner txtPatch;
 	private Combo cmbBanco;
 	private Text txtNome;
+	private Canzone canzone;
+	private int idCanzone;
 	
 	
 	/* costruttore */
-	public WinCanzone(Display display) {
-		win = new Shell(display);
+	public WinCanzone(Shell _parent, int ... id_canzone) {
+		this.parent = _parent;
+		Display display = parent.getDisplay();
+		win = new Shell(parent, SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		win.setText("Nuova canzone");
 		
 		int win_w = 400;
@@ -40,6 +44,16 @@ public class WinCanzone {
 
 		txtNome.setSize(240, txtNome.getSize().y);
 		txtNome.setLocation(120, 10);
+		
+		txtNome.addKeyListener(new KeyListener() {
+			@Override
+			public void keyPressed(KeyEvent e) {}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				canzone.setNome(txtNome.getText());
+			}
+		});
 		
 		Label lblListaPatch = new Label(win, SWT.NONE);
 		lblListaPatch.setText("Lista delle patch");
@@ -196,8 +210,7 @@ public class WinCanzone {
 		btnSalva.setText("Salva");
 		btnSalva.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				salva();
-				win.close();
+				salvaCanzoneEdEsci();
 			}
 		});
 		btnSalva.pack();
@@ -221,7 +234,13 @@ public class WinCanzone {
 		});
 
 		
-		
+		if (id_canzone.length > 0) {
+			this.idCanzone = id_canzone[0];
+			caricaCanzoneDatabase(this.idCanzone);
+		}
+		else {
+			canzone = new Canzone();
+		}
 		
 		
 
@@ -232,20 +251,19 @@ public class WinCanzone {
 	}
 
 
-	protected void salva() {
-		Database.creaTable(Database.TBL_CANZONE);
+	protected void salvaCanzoneEdEsci() {
+		canzone.setPatches(listPatches.getItems());
+		if (canzone.salvaDB())
+			win.close();
+	}
+	
+	private void caricaCanzoneDatabase(int id) {	
+		canzone = new Canzone(id);
+		txtNome.setText(canzone.getNome());
 		
-    // Creiamo la lista di patches
-    StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < listPatches.getItemCount(); i++) {
-			if (i > 0)
-				sb.append("|");
-			sb.append(listPatches.getItems()[i]);
+		for (String patch : canzone.getPatches()) {
+			listPatches.add(patch);
 		}
-    
-		Database.queryUp(
-				"INSERT INTO canzone(nome, lista_patch) VALUES (?, ?);",
-				txtNome.getText(), sb.toString());
-    		
+		//listPatches.select(0);
 	}
 }

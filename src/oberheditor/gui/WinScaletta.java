@@ -114,7 +114,8 @@ public class WinScaletta {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				scaletta.setNome(txtNome.getText());
-			}});
+			}
+		});
 		
 		
 		Label lblData = new Label(win, SWT.NONE);
