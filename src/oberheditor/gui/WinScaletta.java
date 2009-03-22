@@ -33,6 +33,7 @@ public class WinScaletta {
 	private Vector<Canzone> canzoniDisponibili;
 	private DateTime calendario;
 	private Label statusBar;
+	public boolean hoFattoModifiche = false;
 	
 	
 	public WinScaletta(Shell _parent, int ... id_scaletta) {
@@ -378,7 +379,7 @@ public class WinScaletta {
 		}
 	}
 
-	protected void salvaScalettaEdEsci() {
+	private void salvaScalettaEdEsci() {
 		// Controlliamo che la scaletta non contenga piu' di 256 patches
 		int numPatches = scaletta.getNumeroPatches();
 		if (numPatches > 256) {
@@ -386,8 +387,10 @@ public class WinScaletta {
 			return;
 		}
 		
-		if (scaletta.salvaDB())
+		if (scaletta.salvaDB()) {
+			this.hoFattoModifiche = true;
 			win.close();
+		}
 	}
 
 	protected void refreshControlli() {

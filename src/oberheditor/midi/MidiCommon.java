@@ -39,9 +39,9 @@ package oberheditor.midi;
 |<---            this code is formatted to fit into 80 columns             --->|
 */
 
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
+import java.util.Vector;
+
+import javax.sound.midi.*;
 
 
 
@@ -49,6 +49,8 @@ import javax.sound.midi.MidiUnavailableException;
 */
 public class MidiCommon
 {
+	public static Vector<MidiDevice> porte_out = null;
+	
 	/**	TODO:
 		todo: flag long
 	 */
@@ -187,6 +189,64 @@ public class MidiCommon
 	{
 		System.out.println(strMessage);
 	}
+	
+	public static boolean initPorteOut() {
+		porte_out = new Vector<MidiDevice>();
+		
+		MidiDevice.Info[] lista = MidiSystem.getMidiDeviceInfo();
+		
+		/*************************************************************
+		 *              Ricerca porte disponibili
+		 *************************************************************/
+		for (MidiDevice.Info i : lista) {
+			MidiDevice device = null;
+			try {
+				device = MidiSystem.getMidiDevice(i);
+			} catch (MidiUnavailableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if ( (device instanceof Sequencer) || (device instanceof Synthesizer)) {
+				// Scarto le interfacce inutili, voglio solo vere porte MIDI.
+				continue;
+			}
+			
+			int numin = device.getMaxReceivers();
+			if (numin == -1 || numin > 0) {
+				porte_out.add(device);
+				System.out.println(device.getDeviceInfo().getDescription());
+				System.out.println("Porta " + device.getDeviceInfo().getName() + " aggiunta come MIDI OUT.");
+			}
+		}
+		
+		if (porte_out.size() <= 0) {
+			System.out.println("Nessuna porta in uscita disponibile.");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/** inutilizzato per ora */
+	public static Receiver getReceiverFromOutPort(int indice) {
+		MidiDevice porta_out = porte_out.get(indice);
+		
+		if (!(porta_out.isOpen())) {
+		  try {
+		  	porta_out.open();
+		  	Receiver rcvr = porta_out.getReceiver();
+		  	return rcvr;
+		  } catch (MidiUnavailableException e) {
+		  	// Handle or throw exception...
+		  	e.printStackTrace();
+		  }
+		} else {
+			System.out.println("Non dovrei mostrare questo.");
+		}
+		return null;
+	}
+	
+	
 }
 
 

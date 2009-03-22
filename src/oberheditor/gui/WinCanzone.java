@@ -18,6 +18,7 @@ public class WinCanzone {
 	private Text txtNome;
 	private Canzone canzone;
 	private int idCanzone;
+	public boolean hoFattoModifiche = false;
 	
 	
 	/* costruttore */
@@ -251,10 +252,12 @@ public class WinCanzone {
 	}
 
 
-	protected void salvaCanzoneEdEsci() {
+	private void salvaCanzoneEdEsci() {
 		canzone.setPatches(listPatches.getItems());
-		if (canzone.salvaDB())
+		if (canzone.salvaDB()) {
+			this.hoFattoModifiche = true;
 			win.close();
+		}
 	}
 	
 	private void caricaCanzoneDatabase(int id) {	

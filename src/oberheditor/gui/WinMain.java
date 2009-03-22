@@ -399,9 +399,6 @@ public class WinMain {
 		btnEliminaCanzone.setLayoutData(layBtnEliminaCanzone);
 		
 		
-//		(14:18:50) Dery: ed oggi quel ragazzo che mi piaceva ha detto che mi so fatta chiù beell
-//		(14:19:04) Dery: e ij agg ritt beell ro mij ma va aiz a merd e accirt!XD
-//		(14:19:18) Frasten: orcozio, non ho capito una sega
 		caricaCanzoni();
 		
 		win.open();
@@ -412,16 +409,16 @@ public class WinMain {
 	
 	private void modificaScalette() {
 		if (listScalette.getSelectionCount() <= 0) return;
-		new WinScaletta(win, scalette.get(listScalette.getSelectionIndex()).getId());
-		// TODO: solo se ho confermato il salva
-		caricaScalette();
+		WinScaletta winSc = new WinScaletta(win, scalette.get(listScalette.getSelectionIndex()).getId());
+		if (winSc.hoFattoModifiche)
+			caricaScalette();
 	}
 	
 	private void modificaCanzoni() {
 		if (listCanzoni.getSelectionCount() <= 0) return;
-		new WinCanzone(win, canzoni.get(listCanzoni.getSelectionIndex()).getId());
-		// TODO: solo se ho confermato il salva
-		caricaCanzoni();
+		WinCanzone winSong = new WinCanzone(win, canzoni.get(listCanzoni.getSelectionIndex()).getId());
+		if (winSong.hoFattoModifiche)
+			caricaCanzoni();
 	}
 
 	private void refreshTastiScaletta() {
@@ -439,6 +436,17 @@ public class WinMain {
 	private void caricaScalette() {
 		Database.creaTable(Database.TBL_SCALETTA);
 		ResultSet res = Database.query("SELECT id FROM scaletta ORDER BY data DESC, id DESC;");
+		
+		// Se avevo gia' selezione, la ripristino dopo aver ricaricato.
+		int [] oldSelectedIndexes = listScalette.getSelectionIndices();
+		Vector<Integer> oldSelectedIds = new Vector<Integer>();
+		if (oldSelectedIndexes.length > 0) {
+			// Avevo una selezione, salvo gli id
+			for (int i = 0; i < oldSelectedIndexes.length; i++) {
+				oldSelectedIds.add(scalette.get(oldSelectedIndexes[i]).getId());
+			}
+		}
+		
 		scalette = new Vector<Scaletta>();
 		listScalette.removeAll();
 		
@@ -456,6 +464,8 @@ public class WinMain {
 				TableItem item = new TableItem (listScalette, SWT.NONE);
 				item.setText (0, sc.getNome());
 				item.setText (1, new SimpleDateFormat("dd/MM/yyyy").format(sc.getData().getTime()));
+				if (oldSelectedIds.contains(id))
+					listScalette.select(listScalette.getItemCount() - 1);
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -467,6 +477,16 @@ public class WinMain {
 	private void caricaCanzoni() {
 		Database.creaTable(Database.TBL_CANZONE);
 		ResultSet res = Database.query("SELECT id FROM canzone ORDER BY nome ASC;");
+		
+		// Se avevo gia' selezione, la ripristino dopo aver ricaricato.
+		int [] oldSelectedIndexes = listCanzoni.getSelectionIndices();
+		Vector<Integer> oldSelectedIds = new Vector<Integer>();
+		if (oldSelectedIndexes.length > 0) {
+			// Avevo una selezione, salvo gli id
+			for (int i = 0; i < oldSelectedIndexes.length; i++) {
+				oldSelectedIds.add(canzoni.get(oldSelectedIndexes[i]).getId());
+			}
+		}
 		canzoni = new Vector<Canzone>();
 		listCanzoni.removeAll();
 		
@@ -482,6 +502,8 @@ public class WinMain {
 				Canzone song = new Canzone(id);
 				canzoni.add(song);
 				listCanzoni.add(song.getNome());
+				if (oldSelectedIds.contains(id))
+					listCanzoni.select(listCanzoni.getItemCount() - 1);
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
