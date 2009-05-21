@@ -79,6 +79,12 @@ public class WinInviaSysex {
 					// Se e' andato tutto bene, chiudo la finestra
 					win.close();
 				}
+				else {
+					MessageBox errore = new MessageBox(win, SWT.ICON_ERROR | SWT.OK);
+					errore.setMessage("Errore di invio.");
+					errore.setText("Errore");
+					errore.open();
+				}
 			}
 		});
 		Image imgInvia = new Image(display, "res/send.png");

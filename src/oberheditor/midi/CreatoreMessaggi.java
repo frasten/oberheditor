@@ -97,7 +97,7 @@ public class CreatoreMessaggi {
 			SysexMessage sysex = new SysexMessage();
 			try {
 				sysex.setMessage(bytes, puntatore + 1);
-				System.out.println(SysexReceiver.getHexString(sysex.getMessage()));
+//				System.out.println(SysexReceiver.getHexString(sysex.getMessage()));
 			} catch (InvalidMidiDataException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -169,7 +169,7 @@ public class CreatoreMessaggi {
 			SysexMessage sysex = new SysexMessage();
 			try {
 				sysex.setMessage(bytes, puntatore + 1);
-				System.out.println(SysexReceiver.getHexString(sysex.getMessage()));
+//				System.out.println(SysexReceiver.getHexString(sysex.getMessage()));
 			} catch (InvalidMidiDataException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -241,7 +241,7 @@ public class CreatoreMessaggi {
 			SysexMessage sysex = new SysexMessage();
 			try {
 				sysex.setMessage(bytes, puntatore + 1);
-				System.out.println(SysexReceiver.getHexString(sysex.getMessage()));
+//				System.out.println(SysexReceiver.getHexString(sysex.getMessage()));
 			} catch (InvalidMidiDataException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
