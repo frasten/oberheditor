@@ -25,6 +25,7 @@ public class WinScaletta {
 	private Shell win, parent; // La finestra stessa
 	private List listCanzoniDisponibili;
 	private List listCanzoniScaletta;
+	private Button chkNascondiUsate;
 	private Button btnAdd, btnMuoviSu, btnMuoviGiu, btnElimina;
 	private Text txtNome, data;
 	
@@ -34,6 +35,7 @@ public class WinScaletta {
 	private DateTime calendario;
 	private Label statusBar;
 	public boolean hoFattoModifiche = false;
+	private Vector<Canzone> canzoniDisponibiliOriginale;
 	
 	
 	public WinScaletta(Shell _parent, int ... id_scaletta) {
@@ -242,12 +244,30 @@ public class WinScaletta {
 		});
 		
 		
+		chkNascondiUsate = new Button(win, SWT.CHECK);
+		chkNascondiUsate.setText("Nascondi già utilizzate");
+		FormData layChkNascondiUsate = new FormData();
+		layChkNascondiUsate.left = new FormAttachment(100, -217);
+		layChkNascondiUsate.bottom = new FormAttachment(listCanzoniScaletta, 0, SWT.BOTTOM);
+		chkNascondiUsate.setLayoutData(layChkNascondiUsate);
+		
+		chkNascondiUsate.addListener(SWT.Selection, new Listener () {
+			@Override
+			public void handleEvent(Event event) {
+				refreshCanzoniDisponibili();
+			}
+		});
+		
+		// Di default, nascondo quelle già utilizzate
+		chkNascondiUsate.setSelection(true);
+		
+		
 		listCanzoniDisponibili = new List (win, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
 		FormData layListDisponibili = new FormData();
 		layListDisponibili.right = new FormAttachment(100, -10);
 		layListDisponibili.top = new FormAttachment(listCanzoniScaletta, 0, SWT.TOP);
 		layListDisponibili.width = 180;
-		layListDisponibili.bottom = new FormAttachment(listCanzoniScaletta, 0, SWT.BOTTOM);
+		layListDisponibili.bottom = new FormAttachment(chkNascondiUsate, -3, SWT.TOP);
 		listCanzoniDisponibili.setLayoutData(layListDisponibili);
 		
 		
@@ -270,6 +290,14 @@ public class WinScaletta {
 					scaletta.addCanzone(song, startSelezione + 1 + i);
 				}
 				listCanzoniScaletta.setSelection(startSelezione + 1, startSelezione + listCanzoniDisponibili.getSelection().length);
+				
+				if (chkNascondiUsate.getSelection()) {
+					int[] selezione = listCanzoniDisponibili.getSelectionIndices();
+					for (int i = selezione.length - 1; i >= 0; i--) {
+						canzoniDisponibili.remove(selezione[i]);
+						listCanzoniDisponibili.remove(selezione[i]);
+					}
+				}
 				refreshControlli();
 			}
 		});
@@ -352,7 +380,7 @@ public class WinScaletta {
 					scaletta.rimuoviCanzone(selezione[i]);
 					listCanzoniScaletta.remove(selezione[i]);
 				}
-				refreshControlli();
+				refreshCanzoniDisponibili();
 			}
 		});
 		
@@ -368,9 +396,7 @@ public class WinScaletta {
 			scaletta = new Scaletta();
 		}
 		
-		
-		
-		refreshControlli();
+		refreshCanzoniDisponibili();
 		
 		
 		win.open();
@@ -404,17 +430,38 @@ public class WinScaletta {
 			btnMuoviSu.setEnabled(!listCanzoniScaletta.isSelected(0));
 			btnMuoviGiu.setEnabled(!listCanzoniScaletta.isSelected(listCanzoniScaletta.getItemCount()-1));
 		}
-		System.out.print("Nuovo ordine: ");
-		for (Canzone song : scaletta.getCanzoni()) {
-			System.out.print(song.getId()+"|");
-		}
-		System.out.println();
+		btnAdd.setEnabled(listCanzoniDisponibili.getItemCount() > 0);
+		
 	}
 
+	private void refreshCanzoniDisponibili() {
+		canzoniDisponibili.removeAllElements();
+		listCanzoniDisponibili.removeAll();
+		
+		for (Canzone song : canzoniDisponibiliOriginale) {
+			boolean gia_presente = false;
+			if (scaletta != null) {
+				for (Canzone tmp : scaletta.getCanzoni()) {
+					if (tmp.getId() == song.getId()) {
+						gia_presente = true;
+						break;
+					}
+				}
+			}
+			
+			if (!chkNascondiUsate.getSelection() || !gia_presente) {
+				canzoniDisponibili.add(song);
+				listCanzoniDisponibili.add(song.getNome());
+			}
+		}
+		refreshControlli();
+	}
+	
 	private void caricaCanzoniDisponibili() {
 		Database.creaTable(Database.TBL_CANZONE);
 		ResultSet res = Database.query("SELECT id FROM canzone ORDER BY nome ASC;");
 		canzoniDisponibili = new Vector<Canzone>();
+		canzoniDisponibiliOriginale = new Vector<Canzone>();
 		
 		try {
 			Vector<Integer> canzoni = new Vector<Integer>();
@@ -427,10 +474,8 @@ public class WinScaletta {
 			res.getStatement().close();
 			for (Integer id : canzoni) {
 				Canzone song = new Canzone(id);
-				canzoniDisponibili.add(song);
-				listCanzoniDisponibili.add(song.getNome());
+				canzoniDisponibiliOriginale.add(song);
 			}
-			
 			listCanzoniDisponibili.select(0);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
