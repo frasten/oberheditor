@@ -102,14 +102,17 @@ public class WinCanzone {
 		//btnAdd.setText("Aggiungi");
 		btnAdd.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				listPatches.add(cmbBanco.getItem(cmbBanco.getSelectionIndex()) + "-" +
-						String.format("%03d", Integer.parseInt(txtPatch.getText()))
-				);/*
-				ScrollBar sb = listPatches.getVerticalBar();
-//					sb.setMaximum(sb.getMaximum() + sb.getIncrement());
-				listPatches.update();
-				sb.setSelection(sb.getMaximum());
-				System.out.println(sb.getMaximum());*/
+				String nomePatch = cmbBanco.getItem(cmbBanco.getSelectionIndex()) + "-" +
+				String.format("%03d", Integer.parseInt(txtPatch.getText()));
+				if (listPatches.getSelectionCount() <= 0) {
+					listPatches.add(nomePatch);
+					listPatches.select(listPatches.getItemCount() - 1);
+				}
+				else {
+					listPatches.add(nomePatch, listPatches.getSelectionIndex() + 1);
+					listPatches.setSelection(listPatches.getSelectionIndex() + 1);
+				}
+				
 				txtPatch.setSelection(txtPatch.getSelection() + 1);
 				txtPatch.setFocus();
 			}
