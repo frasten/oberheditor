@@ -13,6 +13,7 @@ import oberheditor.Scaletta;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -84,11 +85,11 @@ public class WinScaletta {
 
 		
 		statusBar = new Label(win, SWT.BORDER);
-		statusBar.setText("prova");
 		FormData layStatusBar = new FormData();
-		layStatusBar.bottom = new FormAttachment(100, 2);
-		layStatusBar.left = new FormAttachment(0, -2);
-		layStatusBar.right = new FormAttachment(100, 2);
+		
+		layStatusBar.left = new FormAttachment(0);
+		layStatusBar.right = new FormAttachment(100);
+		layStatusBar.bottom = new FormAttachment(100);
 		statusBar.setLayoutData(layStatusBar);
 		
 		
@@ -299,6 +300,7 @@ public class WinScaletta {
 					}
 				}
 				refreshControlli();
+				updateStatusBar();
 			}
 		});
 		
@@ -381,6 +383,7 @@ public class WinScaletta {
 					listCanzoniScaletta.remove(selezione[i]);
 				}
 				refreshCanzoniDisponibili();
+				updateStatusBar();
 			}
 		});
 		
@@ -397,12 +400,32 @@ public class WinScaletta {
 		}
 		
 		refreshCanzoniDisponibili();
-		
+		updateStatusBar();
 		
 		win.open();
 		while (!win.isDisposed()) {
 			if (!display.readAndDispatch()) display.sleep ();
 		}
+	}
+
+	private void updateStatusBar() {
+		int num_canzoni = listCanzoniScaletta.getItemCount();
+		StringBuffer testo = new StringBuffer();
+		testo.append(num_canzoni);
+		testo.append(" canzon");
+		testo.append(num_canzoni == 1 ? 'e' : 'i');
+		testo.append(" nella scaletta.");
+
+		if (scaletta.getNumeroPatches() > 256) {
+			testo.append(" Attenzione: troppe patches!!!!");
+			statusBar.setForeground(win.getDisplay().getSystemColor(SWT.COLOR_RED));
+		}
+		else {
+			statusBar.setForeground(win.getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
+		}
+		
+		statusBar.setText(testo.toString());
+		
 	}
 
 	private void salvaScalettaEdEsci() {
