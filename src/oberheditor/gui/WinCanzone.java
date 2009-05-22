@@ -1,5 +1,7 @@
 package oberheditor.gui;
 
+import java.sql.SQLException;
+
 import oberheditor.Canzone;
 
 import org.eclipse.swt.events.*;
@@ -257,14 +259,24 @@ public class WinCanzone {
 
 	private void salvaCanzoneEdEsci() {
 		canzone.setPatches(listPatches.getItems());
-		if (canzone.salvaDB()) {
-			this.hoFattoModifiche = true;
-			win.close();
+		try {
+			if (canzone.salvaDB()) {
+				this.hoFattoModifiche = true;
+				win.close();
+			}
+		} catch (SQLException e) {
+			Main.errorBox(win, "Errore nel salvataggio.\n" + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
 	private void caricaCanzoneDatabase(int id) {	
-		canzone = new Canzone(id);
+		try {
+			canzone = new Canzone(id);
+		} catch (SQLException e) {
+			Main.errorBox(win, "Errore nel caricamento.\n" + e.getMessage());
+			e.printStackTrace();
+		}
 		txtNome.setText(canzone.getNome());
 		
 		for (String patch : canzone.getPatches()) {

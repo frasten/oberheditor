@@ -19,7 +19,7 @@ public class Database {
 			System.out.println("Libreria sqlitejdbc mancante.");
 			System.exit(1);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Errore di connessione al database.");
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -29,12 +29,11 @@ public class Database {
 		try {
 			conn.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public static ResultSet query(String query, String ... args) {
+	public static ResultSet query(String query, String ... args) throws SQLException {
 		try {
 			
 			PreparedStatement prep = conn.prepareStatement(query);
@@ -45,13 +44,11 @@ public class Database {
 			ResultSet res = prep.executeQuery();
 			return res;
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
-		return null;
 	}
 	
-	public static int queryUp(String query, String ... args) {
+	public static int queryUp(String query, String ... args) throws SQLException {
 		try {
 			PreparedStatement prep = conn.prepareStatement(query);
 			for (int i = 0; i < args.length; i++) {
@@ -68,13 +65,11 @@ public class Database {
 	    prep.close();
 	    return result;
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
-		return -1;
 	}
 	
-	public static void creaTable(int tabella) {
+	public static void creaTable(int tabella) throws SQLException {
 		
 		if ((tabella & TBL_CANZONE) != 0) {
 			queryUp("CREATE TABLE IF NOT EXISTS canzone(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, lista_patch TEXT, lista_desc TEXT);");
@@ -91,8 +86,9 @@ public class Database {
 	
 	/**
 	 * Creo il database e lo popolo
+	 * @throws SQLException 
 	 */
-	public static void crea() {
+	public static void crea() throws SQLException {
 		Database.creaTable(Database.TBL_CANZONE | Database.TBL_SCALETTA | Database.TBL_SCALETTA_CANZONE);
 		queryUp("DELETE FROM scaletta");
 		queryUp("DELETE FROM scaletta_canzone");

@@ -33,8 +33,9 @@ public class Canzone {
 	/**
 	 * Creo una canzone caricandola dal database.
 	 * @param id L'id della canzone.
+	 * @throws SQLException 
 	 */
-	public Canzone(int id) {
+	public Canzone(int id) throws SQLException {
 		this();
 		if (id <= 0) throw new IllegalArgumentException("L'id deve essere > 0.");
 		
@@ -58,8 +59,7 @@ public class Canzone {
 				 throw new IllegalArgumentException("Non c'è nessuna scaletta salvata con questo ID.");
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 	}
 
@@ -117,8 +117,9 @@ public class Canzone {
 	 * Salva nel database i dati di questa canzone. Se e' una nuova
 	 * canzone, la inserisce, altrimenti la aggiorna.
 	 * @return <em>true</em> in caso di successo, altrimenti <em>false</em>.
+	 * @throws SQLException 
 	 */
-	public boolean salvaDB() {
+	public boolean salvaDB() throws SQLException {
 		Database.creaTable(Database.TBL_CANZONE);
 		
 		if (patches.size() > 256) {

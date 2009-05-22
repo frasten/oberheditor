@@ -195,12 +195,16 @@ public class WinMain {
 					// dal db
 					// TODO: magari unificare con una query unica, invece che mille query nel for
 					int id = scalette.get(selezione[i]).getId();
-					Database.queryUp("DELETE FROM scaletta WHERE id = ?", id+"");
-					Database.queryUp("DELETE FROM scaletta_canzone WHERE id_scaletta = ?", id+"");
-					
-					// dal vettore delle scalette
-					scalette.remove(selezione[i]);
-					refreshTastiScaletta();
+					try {
+						Database.queryUp("DELETE FROM scaletta WHERE id = ?", id+"");
+						Database.queryUp("DELETE FROM scaletta_canzone WHERE id_scaletta = ?", id+"");
+						// dal vettore delle scalette
+						scalette.remove(selezione[i]);
+						refreshTastiScaletta();
+					} catch (SQLException e1) {
+						Main.errorBox(win, "Errore nell'eliminazione.\n" + e1.getMessage());
+						e1.printStackTrace();
+					}
 				}
 			}
 		});
@@ -300,12 +304,16 @@ public class WinMain {
 					// dal db
 					// TODO: magari unificare con una query unica, invece che mille query nel for
 					int id = canzoni.get(selezione[i]).getId();
-					Database.queryUp("DELETE FROM canzone WHERE id = ?", id+"");
-					Database.queryUp("DELETE FROM scaletta_canzone WHERE id_canzone = ?", id+"");
-					
-					// dal vettore delle scalette
-					canzoni.remove(selezione[i]);
-					refreshTastiCanzone();
+					try {
+						Database.queryUp("DELETE FROM canzone WHERE id = ?", id+"");
+						Database.queryUp("DELETE FROM scaletta_canzone WHERE id_canzone = ?", id+"");
+						// dal vettore delle scalette
+						canzoni.remove(selezione[i]);
+						refreshTastiCanzone();
+					} catch (SQLException e1) {
+						Main.errorBox(win, "Errore nell'eliminazione.\n" + e1.getMessage());
+						e1.printStackTrace();
+					}
 				}
 			}
 		});
@@ -353,8 +361,15 @@ public class WinMain {
 	}
 
 	private void caricaScalette() {
-		Database.creaTable(Database.TBL_SCALETTA);
-		ResultSet res = Database.query("SELECT id FROM scaletta ORDER BY data DESC, id DESC;");
+		ResultSet res;
+		try {
+			Database.creaTable(Database.TBL_SCALETTA);
+			res = Database.query("SELECT id FROM scaletta ORDER BY data DESC, id DESC;");
+		} catch (SQLException e1) {
+			Main.errorBox(win, "Errore nel caricamento.\n" + e1.getMessage());
+			e1.printStackTrace();
+			return;
+		}
 		
 		// Se avevo gia' selezione, la ripristino dopo aver ricaricato.
 		int [] oldSelectedIndexes = listScalette.getSelectionIndices();
@@ -387,15 +402,23 @@ public class WinMain {
 					listScalette.select(listScalette.getItemCount() - 1);
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			Main.errorBox(win, "Errore di connessione al database.");
 			e.printStackTrace();
 		}
 		refreshTastiScaletta();
 	}
 	
 	private void caricaCanzoni() {
-		Database.creaTable(Database.TBL_CANZONE);
-		ResultSet res = Database.query("SELECT id FROM canzone ORDER BY nome ASC;");
+		ResultSet res;
+		try {
+			Database.creaTable(Database.TBL_CANZONE);
+			res = Database.query("SELECT id FROM canzone ORDER BY nome ASC;");
+		} catch (SQLException e1) {
+			Main.errorBox(win, "Errore nel caricamento.\n" + e1.getMessage());
+			e1.printStackTrace();
+			return;
+		}
+		
 		
 		// Se avevo gia' selezione, la ripristino dopo aver ricaricato.
 		int [] oldSelectedIndexes = listCanzoni.getSelectionIndices();
@@ -425,7 +448,7 @@ public class WinMain {
 					listCanzoni.select(listCanzoni.getItemCount() - 1);
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			Main.errorBox(win, "Errore di connessione al database.");
 			e.printStackTrace();
 		}
 		refreshTastiCanzone();

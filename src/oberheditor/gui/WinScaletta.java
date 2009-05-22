@@ -432,9 +432,14 @@ public class WinScaletta {
 			return;
 		}
 		
-		if (scaletta.salvaDB()) {
-			this.hoFattoModifiche = true;
-			win.close();
+		try {
+			if (scaletta.salvaDB()) {
+				this.hoFattoModifiche = true;
+				win.close();
+			}
+		} catch (SQLException e) {
+			Main.errorBox(win, "Errore nel salvataggio.\n" + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
@@ -477,8 +482,16 @@ public class WinScaletta {
 	}
 	
 	private void caricaCanzoniDisponibili() {
-		Database.creaTable(Database.TBL_CANZONE);
-		ResultSet res = Database.query("SELECT id FROM canzone ORDER BY nome ASC;");
+		ResultSet res;
+		try {
+			Database.creaTable(Database.TBL_CANZONE);
+			res = Database.query("SELECT id FROM canzone ORDER BY nome ASC;");
+		} catch (SQLException e1) {
+			Main.errorBox(win, "Errore nel caricamento.\n" + e1.getMessage());
+			e1.printStackTrace();
+			return;
+		}
+		
 		canzoniDisponibili = new Vector<Canzone>();
 		canzoniDisponibiliOriginale = new Vector<Canzone>();
 		
@@ -497,14 +510,19 @@ public class WinScaletta {
 			}
 			listCanzoniDisponibili.select(0);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			Main.errorBox(win, "Errore di connessione al database.");
 			e.printStackTrace();
 		}
 	}
 	
 	private void caricaScalettaDatabase(int id) {
-		
-		scaletta = new Scaletta(id);
+		try {
+			scaletta = new Scaletta(id);
+		} catch (SQLException e) {
+			Main.errorBox(win, "Errore nel caricamento.\n" + e.getMessage());
+			e.printStackTrace();
+			return;
+		}
 		txtNome.setText(scaletta.getNome());
 		
 		// Imposto la data

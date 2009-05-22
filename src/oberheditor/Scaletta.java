@@ -23,8 +23,9 @@ public class Scaletta {
 	/**
 	 * Creo una scaletta caricandola dal database.
 	 * @param id L'id della scaletta
+	 * @throws SQLException 
 	 */
-	public Scaletta(int id) {
+	public Scaletta(int id) throws SQLException {
 		this();
 		if (id <= 0) throw new IllegalArgumentException("L'id deve essere > 0.");
 		Database.creaTable(Database.TBL_CANZONE | Database.TBL_SCALETTA | Database.TBL_SCALETTA_CANZONE);
@@ -67,8 +68,7 @@ public class Scaletta {
 			
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 	  
 
@@ -141,7 +141,7 @@ public class Scaletta {
 	}
 	
 	
-	public boolean salvaDB() {
+	public boolean salvaDB() throws SQLException {
 		Database.creaTable(Database.TBL_CANZONE | Database.TBL_SCALETTA | Database.TBL_SCALETTA_CANZONE);
 		
 		// Salvo le canzoni
