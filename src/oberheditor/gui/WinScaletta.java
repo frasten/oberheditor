@@ -13,7 +13,6 @@ import oberheditor.Scaletta;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -138,9 +137,6 @@ public class WinScaletta {
 		calendario.addListener(SWT.Selection, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				/* TODO: trovare un metodo per non far chiudere il calendario
-				 * su cambio di mese
-				 */
 				boolean chiudi = true;
 				GregorianCalendar newData = new GregorianCalendar(calendario.getYear(),
       			calendario.getMonth(), calendario.getDay()); 
