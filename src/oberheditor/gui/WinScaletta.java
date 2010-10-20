@@ -12,6 +12,7 @@ import oberheditor.Database;
 import oberheditor.Scaletta;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
@@ -239,6 +240,66 @@ public class WinScaletta {
 				refreshControlli();
 			}
 		});
+		
+		int operations = DND.DROP_MOVE | DND.DROP_COPY;
+		DragSource source = new DragSource(listCanzoniScaletta, operations);
+		final Transfer[] types = new Transfer[] {TextTransfer.getInstance()};
+		source.setTransfer(types);
+		source.addDragListener(new DragSourceListener() {
+			public void dragStart(DragSourceEvent event) {
+				// Inizio il drag solo se effettivamente c'è una selezione.
+				if (listCanzoniScaletta.getSelectionCount() <= 0)
+					event.doit = false;
+			}
+			public void dragSetData(DragSourceEvent event) {
+				// Provide the data of the requested type.
+				if (types[0].isSupportedType(event.dataType)) {
+					// Formato dei dati draggati: "1|3|5"
+					StringBuffer sb = new StringBuffer();
+					int[] selezione = listCanzoniScaletta.getSelectionIndices();
+					for (int i = 0; i < selezione.length; i++) {
+						sb.append(selezione[i]);
+						if (i < selezione.length - 1)
+							sb.append('|');
+					}
+					
+					event.data = sb.toString();
+					System.out.println(sb.toString());
+				}
+			}
+			public void dragFinished(DragSourceEvent event) {
+				System.out.println("finisco.");
+				if (event.detail == DND.DROP_MOVE) {
+					// Drag completato
+				}
+			}
+		});
+				
+		operations = DND.DROP_MOVE;
+		DropTarget target = new DropTarget(listCanzoniScaletta, operations);
+		target.setTransfer(types);
+		target.addDropListener(new DropTargetListener() {
+			public void dragEnter(DropTargetEvent event) {
+				
+			}
+			public void dragOver(DropTargetEvent event) {
+				// Chiamato mooooooooolte volte
+				event.feedback = DND.FEEDBACK_SELECT | DND.FEEDBACK_SCROLL;
+			}
+			public void dragOperationChanged(DropTargetEvent event) {}
+			public void dragLeave(DropTargetEvent event) {}
+			public void dropAccept(DropTargetEvent event) {}
+			public void drop(DropTargetEvent event) {
+				
+				int indiceDrop = (event.y -
+						listCanzoniScaletta.toDisplay(0, 0).y +
+						listCanzoniScaletta.getVerticalBar().getSelection()) /
+						listCanzoniScaletta.getItemHeight();
+				System.out.println("Droppo "+event.data+" dopo il "+indiceDrop);
+				
+			}
+		});
+			
 		
 		
 		chkNascondiUsate = new Button(win, SWT.CHECK);
