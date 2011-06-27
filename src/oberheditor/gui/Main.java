@@ -25,6 +25,7 @@ public class Main {
 		new WinMain(display);
 	}
 	
+	
 	protected static void errorBox(Shell win, String messaggio) {
 		MessageBox boxChiedi = new MessageBox(win, SWT.ICON_ERROR | SWT.OK);
 		boxChiedi.setText("Errore");
